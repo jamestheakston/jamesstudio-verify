@@ -1,908 +1,397 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Your Identity</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; connect-src 'self' https://pkqkqijmohbvfxxnzhyy.supabase.co https://api.truelayer.com https://auth.truelayer.com; frame-src 'self' https://auth.truelayer.com; img-src 'self' data: https://truelayer-client-logos.s3-eu-west-1.amazonaws.com;">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+// Supabase Edge Function URLs
+const CREATE_SESSION_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/create-session';
+const GET_ACCOUNT_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/get-account';
+const SESSION_STATUS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/session-status';
+const SUPABASE_ANON_KEY = 'sb_publishable_Raqakv5Z4U8Wr7zmzIvLDA_TsnBSFyS';
 
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: #FAF9F6;
-            color: #1A1A1A;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+// Get the current page URL for redirect
+const redirectUri = window.location.origin + window.location.pathname;
 
-        h1, h2, h3 {
-            font-family: 'Syne', sans-serif;
-            letter-spacing: -0.02em;
-        }
+// Check if we're returning from TrueLayer OAuth
+const urlParams = new URLSearchParams(window.location.search);
+const authCode = urlParams.get('code');
+const error = urlParams.get('error');
 
-        .mobile-screen {
-            background: white;
-            width: 100%;
-            max-width: 360px;
-            padding: 32px 24px;
-            display: flex;
-            flex-direction: column;
-            border-radius: 32px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-        }
+if (error) {
+    // Handle OAuth error
+    handleOAuthError(error);
+} else if (authCode) {
+    // Handle OAuth callback
+    handleOAuthCallback(authCode);
+}
 
-        /* Logo */
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 24px;
-            font-family: 'Syne', sans-serif;
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-            color: #1A1A1A;
-            text-decoration: none;
-        }
+// Check if user is on mobile
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
-        /* Centre the logo on every screen except the method list */
-        .mobile-screen:has(#cards[style*="display: none"]) .logo {
-            justify-content: center;
-        }
+// Disable phone verification on mobile
+if (isMobile) {
+    const phoneCard = document.getElementById('phoneCard');
+    phoneCard.classList.add('desktop-only');
+    phoneCard.classList.remove('active');
+    document.getElementById('phoneMessage').style.display = 'block';
+}
 
-        .logo-pill {
-            background: #1A1A1A;
-            color: #FAF9F6;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 3px 8px;
-            border-radius: 9999px;
-        }
+// Phone card click handler
+document.getElementById('phoneCard').addEventListener('click', () => {
+    // Only allow on desktop
+    if (isMobile) {
+        return; // Do nothing on mobile
+    }
+    
+    // On desktop/tablet, show QR code
+    showQRCode();
+});
 
-        .header {
-            margin-bottom: 24px;
-        }
+function generateSessionId() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
 
-        .header h1 {
-            font-size: 26px;
-            font-weight: 700;
-            color: #1A1A1A;
-            line-height: 1.2;
-            margin-bottom: 8px;
-        }
+function showQRCode() {
+    const sessionId = generateSessionId();
+    const verifyUrl = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
 
-        .header p {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.6;
-        }
+    console.log('QR URL:', verifyUrl);
 
-        .cards {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+    // Hide other states
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('qr').classList.add('active');
 
-        .card {
-            background: white;
-            border: 1px solid #E5E5E5;
-            border-radius: 16px;
-            padding: 14px 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            display: grid;
-            grid-template-columns: 36px 1fr;
-            column-gap: 14px;
-            align-items: center;
-        }
+    // Generate QR code using qrcodejs
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
 
-        .card > .card-icon {
-            grid-column: 1;
-            grid-row: 1 / span 3;
-        }
+    new QRCode(qrContainer, {
+        text: verifyUrl,
+        width: 200,
+        height: 200,
+        colorDark: '#1A1A1A',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
-        .card > h3,
-        .card > p {
-            grid-column: 2;
+    // Set the link href after QR is shown
+    setTimeout(() => {
+        const qrLink = document.getElementById('qrLink');
+        if (qrLink) {
+            qrLink.href = verifyUrl;
+            console.log('Link href set to:', qrLink.href);
+            
+            qrLink.onclick = (e) => {
+                e.preventDefault();
+                console.log('Link clicked, navigating to:', verifyUrl);
+                window.location.href = verifyUrl;
+            };
+        } else {
+            console.error('qrLink element not found');
         }
+    }, 100);
 
-        .card.disabled > h3,
-        .card.has-badge > h3 {
-            padding-right: 56px;
+    // Initialize session status
+    initializeSession(sessionId);
+
+    // Poll for verification completion
+    pollForCompletion(sessionId);
+}
+
+async function initializeSession(sessionId) {
+    try {
+        // Show loading overlay
+        document.getElementById('qrLoadingOverlay').style.display = 'flex';
+        
+        const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ status: 'pending' })
+        });
+        
+        // Hide loading overlay
+        document.getElementById('qrLoadingOverlay').style.display = 'none';
+        
+        if (!response.ok) {
+            const error = await response.text();
+            console.error('Session init failed:', response.status, error);
+        } else {
+            console.log('Session initialized successfully');
         }
+    } catch (error) {
+        console.error('Error initializing session:', error);
+        document.getElementById('qrLoadingOverlay').style.display = 'none';
+    }
+}
 
-        .coming-soon-badge.easiest {
-            background: #ECFDF5;
-            color: #047857;
-        }
+async function pollForCompletion(sessionId) {
+    console.log('Starting to poll for session:', sessionId);
+    
+    const pollInterval = setInterval(async () => {
+        try {
+            const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                }
+            });
 
-        .card:hover {
-            border-color: #1A1A1A;
-        }
+            console.log('Poll response status:', response.status);
 
-        .card.active {
-            border-color: #1A1A1A;
-        }
-
-        .card.disabled {
-            background: #FAF9F6;
-            border-color: #E5E5E5;
-            cursor: not-allowed;
-            opacity: 0.4;
-        }
-
-        .card.disabled:hover {
-            border-color: #E5E5E5;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #FAF9F6;
-            border-radius: 10px;
-        }
-
-        .card-icon svg {
-            width: 20px;
-            height: 20px;
-            color: #1A1A1A;
-        }
-
-        .card.disabled .card-icon svg {
-            color: #999;
-        }
-
-        .card h3 {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1A1A1A;
-            margin-bottom: 4px;
-        }
-
-        .card.disabled h3 {
-            color: #999;
-        }
-
-        .card p {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
-        }
-
-        .card.disabled p {
-            color: #999;
-        }
-
-        .card.desktop-only {
-            background: #FAF9F6;
-            border-color: #E5E5E5;
-            cursor: not-allowed;
-            opacity: 0.4;
-        }
-
-        .card.desktop-only:hover {
-            border-color: #E5E5E5;
-        }
-
-        .card.desktop-only .card-icon svg {
-            color: #999;
-        }
-
-        .card.desktop-only h3 {
-            color: #999;
-        }
-
-        .card.desktop-only p {
-            color: #999;
-        }
-
-        .card.desktop-only .desktop-message {
-            color: #666;
-        }
-
-        .desktop-message {
-            font-size: 11px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .coming-soon-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: #1A1A1A;
-            color: white;
-            font-size: 9px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 4px 8px;
-            border-radius: 9999px;
-        }
-
-        /* Consent screen */
-        .consent {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .consent.active {
-            display: flex;
-        }
-
-        .consent-icon {
-            width: 56px;
-            height: 56px;
-            background: #FAF9F6;
-            border: 1px solid #E5E5E5;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .consent-icon svg {
-            width: 26px;
-            height: 26px;
-            color: #1A1A1A;
-        }
-
-        .consent h2 {
-            font-size: 22px;
-            font-weight: 700;
-            line-height: 1.2;
-            color: #1A1A1A;
-            margin-bottom: 6px;
-        }
-
-        .consent-subtitle {
-            font-size: 13px;
-            font-weight: 500;
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .consent-description {
-            font-size: 13px;
-            color: #444;
-            line-height: 1.7;
-            text-align: left;
-            background: #FAF9F6;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 28px;
-        }
-
-        .consent-description p + p {
-            margin-top: 10px;
-        }
-
-        .consent-steps {
-            list-style: none;
-            counter-reset: step;
-            width: 100%;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        .consent-steps-title {
-            width: 100%;
-            text-align: left;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #999;
-            margin-bottom: 10px;
-        }
-
-        .consent-steps li {
-            counter-increment: step;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            color: #1A1A1A;
-            padding: 6px 0;
-        }
-
-        .consent-steps li::before {
-            content: counter(step);
-            flex-shrink: 0;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 1px solid #1A1A1A;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .header .why {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .header .why strong {
-            color: #1A1A1A;
-            font-weight: 600;
-        }
-
-        .secured {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            color: #666;
-            margin-bottom: 16px;
-        }
-
-        .secured svg {
-            width: 14px;
-            height: 14px;
-            color: #1A1A1A;
-        }
-
-        .loading .secured {
-            margin: 12px 0 0;
-        }
-
-        .support-link {
-            display: block;
-            margin-top: 16px;
-            font-size: 13px;
-            color: #1A1A1A;
-            text-decoration: underline;
-        }
-
-        .bank-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding-bottom: 12px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #e5e5e5;
-        }
-
-        .bank-logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            border: 1px solid #E5E5E5;
-            background: white;
-            object-fit: contain;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Syne', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            color: #1A1A1A;
-        }
-
-        .bank-row span {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .consent-links {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        .consent-links a {
-            color: #1A1A1A;
-            text-decoration: underline;
-        }
-
-        /* Fade transition whenever a screen is shown */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header, .cards, .consent.active, .loading.active, .success.active, .error.active, .qr.active {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .header, .cards, .consent.active, .loading.active, .success.active, .error.active, .qr.active {
-                animation: none;
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Session status:', data);
+                
+                if (data.status === 'completed') {
+                    clearInterval(pollInterval);
+                    showCompletionSuccess();
+                }
+            } else {
+                console.error('Poll request failed:', response.status);
             }
+        } catch (error) {
+            console.error('Error polling session status:', error);
         }
+    }, 3000); // Poll every 3 seconds
+}
 
-        .consent-actions {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #1A1A1A;
-            border: 1px solid #E5E5E5;
-        }
-
-        .btn-secondary:hover {
-            border-color: #1A1A1A;
-        }
-
-        .btn-primary {
-            background: #1A1A1A;
-            color: white;
-            border: 1px solid #1A1A1A;
-        }
-
-        .btn-primary:hover {
-            background: #333;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 80px 0;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            width: 32px;
-            height: 32px;
-            border: 2px solid #E5E5E5;
-            border-top-color: #1A1A1A;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading p {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .success {
-            display: none;
-            text-align: center;
-            padding: 60px 0;
-        }
-
-        .success.active {
-            display: block;
-        }
-
-        .success-icon {
-            width: 56px;
-            height: 56px;
-            background: #1A1A1A;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-        }
-
-        .success-icon svg {
-            width: 28px;
-            height: 28px;
-            color: white;
-        }
-
-        .success h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1A1A1A;
-            margin-bottom: 8px;
-        }
-
-        .success p {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 24px;
-        }
-
-        .account-details {
-            background: #FAF9F6;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: left;
-        }
-
-        .account-details p {
-            font-size: 13px;
-            color: #1A1A1A;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .account-details p:last-child {
-            margin-bottom: 0;
-        }
-
-        .account-details strong {
-            font-weight: 600;
-        }
-
-        .error {
-            display: none;
-            text-align: center;
-            padding: 60px 0;
-        }
-
-        .error.active {
-            display: block;
-        }
-
-        .error-icon {
-            width: 56px;
-            height: 56px;
-            background: #DC2626;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-        }
-
-        .error-icon svg {
-            width: 28px;
-            height: 28px;
-            color: white;
-        }
-
-        .error h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1A1A1A;
-            margin-bottom: 8px;
-        }
-
-        .error p {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 24px;
-        }
-
-        .error-info {
-            background: #FEF2F2;
-            border: 1px solid #FECACA;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: left;
-        }
-
-        .error-info p {
-            font-size: 13px;
-            color: #991B1B;
-            margin-bottom: 8px;
-        }
-
-        .error-info p:last-child {
-            margin-bottom: 0;
-        }
-
-        .retry-btn {
-            background: #1A1A1A;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: background 0.2s;
-        }
-
-        .retry-btn:hover {
-            background: #333;
-        }
-
-        .qr {
-            display: none;
-            text-align: center;
-            padding: 60px 0;
-            position: relative;
-        }
-
-        .qr.active {
-            display: block;
-        }
-
-        .qr h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1A1A1A;
-            margin-bottom: 8px;
-        }
-
-        .qr p {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 24px;
-        }
-
-        .qr-code-container {
-            position: relative;
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid #E5E5E5;
-            display: inline-block;
-            margin-bottom: 24px;
-        }
-
-        #qrcode {
-            width: 200px;
-            height: 200px;
-        }
-
-        #qrcode img {
-            width: 100%;
-            height: 100%;
-        }
-
-        .qr-loading {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .success-tick {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 24px;
-            height: 24px;
-            background: #10B981;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .success-tick svg {
-            width: 14px;
-            height: 14px;
-            color: white;
-        }
-
-        .qr-loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(250, 249, 246, 0.9);
-            backdrop-filter: blur(4px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-            z-index: 10;
-        }
-
-        .qr-loading-overlay .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #1A1A1A;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 400px) {
-            body {
-                padding: 12px;
-            }
-
-            .mobile-screen {
-                padding: 24px 20px;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="mobile-screen">
-        <a class="logo" href="/index.html" aria-label="James Studio">
-            JAMES<span class="logo-pill">Studio</span>
-        </a>
-
-        <div class="header" id="header">
-            <h1>How would you like to verify your identity?</h1>
-            <p>Choose a verification method to continue</p>
-            <p class="why"><strong>Why we ask:</strong> we check you're a real person to prevent fraud and keep client accounts safe.</p>
-        </div>
-
-        <div class="cards" id="cards">
-            <div class="card active" id="bankCard">
-                <div class="card-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                    </svg>
-                </div>
-                <h3>Use Banking App</h3>
-                <p>Verify instantly using your bank account</p>
-            </div>
-
-            <div class="card has-badge" id="phoneCard">
-                <span class="coming-soon-badge easiest">Easiest</span>
-                <div class="success-tick" id="phoneSuccessTick" style="display: none;">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                </div>
-                <div class="card-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <h3>Human check</h3>
-                <p>Quickly confirm you're a real person</p>
-                <p class="desktop-message" id="phoneMessage" style="display: none;">Switch to desktop to use this method</p>
-            </div>
-
-            <div class="card disabled">
-                <span class="coming-soon-badge">Soon</span>
-                <div class="card-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
-                    </svg>
-                </div>
-                <h3>Verify with photo ID</h3>
-                <p>Upload a photo of your ID document</p>
-            </div>
-        </div>
-
-        <!-- Bank consent screen -->
-        <div class="consent" id="consent">
-            <div class="consent-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-            </div>
-            <h2>Connect your bank</h2>
-            <p class="consent-subtitle">Secure, read-only verification</p>
-            <div class="consent-description">
-                <p>You'll be taken to TrueLayer, our secure banking partner, to sign in with your bank and approve access.</p>
-                <p>We'll only see your bank name, account name, the last 4 digits of your account number, account type and the name of the account holder. We can't see your balance or transactions, and we can't make payments.</p>
-                <p>Your bank login details are never shared with us. You can cancel at any time.</p>
-            </div>
-            <p class="consent-steps-title">What happens next</p>
-            <ol class="consent-steps">
-                <li>Pick your bank</li>
-                <li>Approve access in your banking app</li>
-                <li>Come back here to finish</li>
-            </ol>
-            <p class="consent-links">
-                By continuing, you agree to TrueLayer's
-                <a href="https://truelayer.com/enduser_tos/" target="_blank" rel="noopener noreferrer">Terms</a>
-                and
-                <a href="https://truelayer.com/privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
-            </p>
-            <p class="secured">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                Secured by TrueLayer
-            </p>
-            <div class="consent-actions">
-                <button class="btn btn-secondary" id="consentCancelBtn">Cancel</button>
-                <button class="btn btn-primary" id="consentContinueBtn">Continue</button>
-            </div>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p id="loadingText">Connecting to your bank...</p>
-            <p class="secured">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                Secured by TrueLayer
-            </p>
-        </div>
-
-        <div class="success" id="success">
-            <div class="success-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+function showCompletionSuccess() {
+    document.getElementById('qr').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+    
+    // Show success tick on phone card
+    document.getElementById('phoneSuccessTick').style.display = 'flex';
+    
+    // Show success UI with large tick icon like verify.html
+    document.getElementById('header').innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 40px 0;">
+            <div style="width: 64px; height: 64px; background: #1A1A1A; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                <svg width="32" height="32" fill="none" stroke="white" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
-            <h2>Identity Verified</h2>
-            <p>Your bank account ownership has been confirmed</p>
-            <div class="account-details" id="accountDetails">
-                <!-- Account details will be inserted here -->
-            </div>
+            <h1 style="margin: 0;">Identity Verified</h1>
+            <p style="color: #666;">Your identity has been verified successfully.</p>
         </div>
+    `;
+    document.getElementById('cards').style.display = 'none';
+}
 
-        <div class="error" id="error">
-            <div class="error-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </div>
-            <h2 id="errorTitle">Verification Failed</h2>
-            <p id="errorMessage">Something went wrong. Please try again.</p>
-            <div class="error-info" id="errorInfo">
-                <p><strong>What happened:</strong> You denied access to your bank account.</p>
-                <p><strong>What to do:</strong> Click "Try Again" to restart the verification process, or contact support if you continue to experience issues.</p>
-            </div>
-            <button class="retry-btn" id="retryBtn">Try Again</button>
-            <a class="support-link" href="/index.html#contact">Need help? Contact support</a>
-        </div>
+// Bank card click handler: show the consent screen first
+document.getElementById('bankCard').addEventListener('click', () => {
+    showConsent();
+});
 
-        <div class="qr" id="qr">
-            <h2>Continue on Mobile</h2>
-            <p>Scan this QR code with your phone to continue verification</p>
-            <div class="qr-code-container">
-                <div id="qrcode"></div>
-                <div class="qr-loading-overlay" id="qrLoadingOverlay" style="display: none;">
-                    <div class="loading-spinner"></div>
-                    <p>Creating session...</p>
-                </div>
-            </div>
-            <p class="qr-loading">Waiting for mobile verification...</p>
-            <a class="qr-link" id="qrLink" href="#" style="display: block; margin-top: 16px; font-size: 13px; color: #1A1A1A; text-decoration: underline;">Can't scan QR? Click here</a>
-            <button class="retry-btn" id="qrBackBtn" style="margin-top: 16px;">Back</button>
-        </div>
+function showConsent() {
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('consent').classList.add('active');
+}
 
-        <div style="text-align: center; margin-top: 32px;">
-            <a href="privacy.html" style="font-size: 12px; color: #666; text-decoration: none;">Privacy Policy</a>
-        </div>
-    </div>
+function hideConsent() {
+    document.getElementById('consent').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+}
 
-    <script src="script.js?v=2"></script>
-</body>
-</html>
+// Consent: Cancel goes back to the method list
+document.getElementById('consentCancelBtn').addEventListener('click', hideConsent);
+
+// Consent: Continue starts the TrueLayer flow
+document.getElementById('consentContinueBtn').addEventListener('click', () => {
+    document.getElementById('consent').classList.remove('active');
+    startBankVerification();
+});
+
+async function startBankVerification() {
+    document.getElementById('loadingText').textContent = 'Connecting to your bank...';
+    try {
+        // Show loading state
+        document.getElementById('header').style.display = 'none';
+        document.getElementById('cards').style.display = 'none';
+        document.getElementById('loading').classList.add('active');
+
+        // Create TrueLayer session
+        const response = await fetch(CREATE_SESSION_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+                redirectUri: redirectUri
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to create session');
+        }
+
+        const { authUrl } = await response.json();
+
+        // Redirect to TrueLayer OAuth
+        window.location.href = authUrl;
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Verification failed: ' + error.message);
+
+        // Reset to initial state
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('header').style.display = 'block';
+        document.getElementById('cards').style.display = 'flex';
+    }
+}
+
+async function handleOAuthCallback(code) {
+    try {
+        // Show loading state
+        document.getElementById('header').style.display = 'none';
+        document.getElementById('cards').style.display = 'none';
+        document.getElementById('loading').classList.add('active');
+
+        // Get account details
+        console.log('Exchanging code for account details');
+        console.log('Redirect URI:', redirectUri);
+        console.log('Auth code:', code ? code.substring(0, 10) + '...' : 'No code');
+
+        const accountResponse = await fetch(GET_ACCOUNT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+                code: code,
+                redirectUri: redirectUri
+            })
+        });
+
+        if (!accountResponse.ok) {
+            throw new Error('Failed to retrieve account details');
+        }
+
+        const { account, owner } = await accountResponse.json();
+
+        // Show success state
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('success').classList.add('active');
+
+        // Display account details
+        const accountDetails = document.getElementById('accountDetails');
+        let html = `
+            <p><strong>Bank:</strong> ${account.institutionName}</p>
+            <p><strong>Account:</strong> ${account.displayName} (...${account.last4})</p>
+            <p><strong>Type:</strong> ${account.type}</p>
+        `;
+
+        if (owner && owner.name) {
+            html += `
+                <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5;">
+                    <strong>Account Owner:</strong> ${owner.name}
+                </p>
+            `;
+        }
+
+        accountDetails.innerHTML = html;
+        accountDetails.prepend(buildBankRow(account));
+
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Verification failed: ' + error.message);
+
+        // Reset to initial state
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('header').style.display = 'block';
+        document.getElementById('cards').style.display = 'flex';
+    }
+}
+
+// Bank logo + name row. Uses account.logoUrl if the backend returns one,
+// otherwise falls back to the bank's initial.
+function buildBankRow(account) {
+    const row = document.createElement('div');
+    row.className = 'bank-row';
+
+    const name = account.institutionName || 'Your bank';
+    const logoUrl = account.logoUrl;
+
+    function addInitial() {
+        const tile = document.createElement('div');
+        tile.className = 'bank-logo';
+        tile.textContent = name.charAt(0).toUpperCase();
+        row.prepend(tile);
+    }
+
+    if (typeof logoUrl === 'string' && logoUrl.startsWith('https://')) {
+        const img = document.createElement('img');
+        img.className = 'bank-logo';
+        img.alt = '';
+        img.src = logoUrl;
+        img.onerror = () => {
+            img.remove();
+            addInitial();
+        };
+        row.appendChild(img);
+    } else {
+        addInitial();
+    }
+
+    const label = document.createElement('span');
+    label.textContent = name;
+    row.appendChild(label);
+    return row;
+}
+
+function handleOAuthError(error) {
+    console.error('OAuth error:', error);
+
+    // Reset to initial state
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+
+    // Show error state
+    document.getElementById('error').classList.add('active');
+
+    // Set error messages
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorInfo = document.getElementById('errorInfo');
+
+    if (error === 'access_denied') {
+        errorTitle.textContent = 'Verification Cancelled';
+        errorMessage.textContent = 'You denied access to your bank account.';
+        errorInfo.innerHTML = `
+            <p><strong>What happened:</strong> You chose not to share your bank account information.</p>
+            <p><strong>What to do:</strong> If you want to verify your identity, click "Try Again" to restart the process. You'll need to grant access to proceed.</p>
+        `;
+    } else {
+        errorTitle.textContent = 'Verification Failed';
+        errorMessage.textContent = 'Something went wrong during the verification process.';
+        errorInfo.innerHTML = `
+            <p><strong>Error:</strong> ${error}</p>
+            <p><strong>What to do:</strong> Click "Try Again" to restart the verification process. If the problem persists, please contact support.</p>
+        `;
+    }
+
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// Retry button handler
+document.getElementById('retryBtn').addEventListener('click', () => {
+    document.getElementById('error').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+});
+
+// QR back button handler
+document.getElementById('qrBackBtn').addEventListener('click', () => {
+    document.getElementById('qr').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+});
