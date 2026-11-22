@@ -54,16 +54,6 @@ function showQRCode() {
     document.getElementById('cards').style.display = 'none';
     document.getElementById('qr').classList.add('active');
 
-    // Set the link href
-    const qrLink = document.getElementById('qrLink');
-    qrLink.href = verifyUrl;
-    console.log('Link href set to:', qrLink.href);
-
-    // Add click handler to log when clicked
-    qrLink.onclick = (e) => {
-        console.log('Link clicked, going to:', qrLink.href);
-    };
-
     // Generate QR code using qrcodejs
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = '';
@@ -76,6 +66,21 @@ function showQRCode() {
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
     });
+
+    // Set the link href after QR is shown
+    setTimeout(() => {
+        const qrLink = document.getElementById('qrLink');
+        if (qrLink) {
+            qrLink.href = verifyUrl;
+            console.log('Link href set to:', qrLink.href);
+            
+            qrLink.onclick = (e) => {
+                console.log('Link clicked, going to:', qrLink.href);
+            };
+        } else {
+            console.error('qrLink element not found');
+        }
+    }, 100);
 
     // Initialize session status
     initializeSession(sessionId);
