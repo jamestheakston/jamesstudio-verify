@@ -25,9 +25,9 @@ document.getElementById('phoneCard').addEventListener('click', () => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
     if (isMobile) {
-        // On mobile, redirect directly
+        // On mobile, redirect directly with from=mobile parameter
         const sessionId = generateSessionId();
-        window.location.href = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
+        window.location.href = `https://verify.jamesstudio.uk/verify?session=${sessionId}&from=mobile`;
     } else {
         // On desktop/tablet, show QR code
         showQRCode();

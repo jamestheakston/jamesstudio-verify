@@ -130,6 +130,35 @@
             line-height: 1.5;
         }
 
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: #1A1A1A;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .success-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        .success h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+
+        .success p {
+            font-size: 14px;
+            color: #666;
+        }
+
         .back-link {
             text-align: center;
             margin-top: 24px;
@@ -160,17 +189,17 @@
 </head>
 <body>
     <div class="mobile-screen">
-        <div class="header">
+        <div class="header" id="header">
             <h1>Phone Verification</h1>
             <p>Choose a verification method</p>
         </div>
 
-        <div class="session-info">
+        <div class="session-info" id="sessionInfo">
             <p>Session ID:</p>
             <code id="sessionId">Loading...</code>
         </div>
 
-        <div class="methods">
+        <div class="methods" id="methods">
             <div class="method" id="smsMethod">
                 <div class="method-icon">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,20 +221,80 @@
             </div>
         </div>
 
+        <div class="success" id="success" style="display: none; text-align: center; padding: 40px 0;">
+            <div class="success-icon" style="width: 64px; height: 64px; background: #1A1A1A; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 32px; height: 32px; color: white;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 id="successTitle">Identity Complete</h2>
+            <p id="successMessage">Your identity has been verified successfully.</p>
+        </div>
+
         <div class="back-link">
             <a href="index.html">← Back to verification options</a>
         </div>
     </div>
 
     <script>
-        // Get session ID from URL
+        // Get session ID and from parameter from URL
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
+        const fromParam = urlParams.get('from');
 
         if (sessionId) {
             document.getElementById('sessionId').textContent = sessionId;
         } else {
             document.getElementById('sessionId').textContent = 'No session found';
+        }
+
+        // Check if started from mobile
+        if (fromParam === 'mobile') {
+            // User started verification on mobile
+            document.getElementById('header').style.display = 'none';
+            document.getElementById('sessionInfo').style.display = 'none';
+            document.getElementById('methods').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('successTitle').textContent = 'Identity Complete';
+            document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
+        } else {
+            // User scanned QR code from desktop
+            document.getElementById('header').innerHTML = '<h1>Continue on Your Other Device</h1><p>Complete verification on your mobile device</p>';
+            document.getElementById('methods').style.display = 'none';
+            
+            // Show loading message
+            document.getElementById('sessionInfo').innerHTML = '<p style="font-size: 14px; color: #666;">Waiting for verification...</p>';
+
+            // Poll for completion (would need backend to track session status)
+            // For now, just show waiting message
+            pollForCompletion(sessionId);
+        }
+
+        function pollForCompletion(sessionId) {
+            // Poll every 3 seconds for session completion
+            // This would need a backend endpoint to check session status
+            const checkStatus = async () => {
+                try {
+                    // Replace with actual endpoint when backend is ready
+                    // const response = await fetch(`/api/session-status?session=${sessionId}`);
+                    // const data = await response.json();
+                    
+                    // For now, simulate after 30 seconds
+                    // In production, remove this timeout and use real polling
+                    setTimeout(() => {
+                        document.getElementById('header').style.display = 'none';
+                        document.getElementById('sessionInfo').style.display = 'none';
+                        document.getElementById('success').style.display = 'block';
+                        document.getElementById('successTitle').textContent = 'Identity Complete';
+                        document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
+                    }, 30000);
+                } catch (error) {
+                    console.error('Error checking session status:', error);
+                }
+            };
+
+            checkStatus();
+            // const pollInterval = setInterval(checkStatus, 3000);
         }
 
         // Placeholder for SMS verification
