@@ -19,6 +19,51 @@ if (error) {
     handleOAuthCallback(authCode);
 }
 
+// Phone card click handler
+document.getElementById('phoneCard').addEventListener('click', () => {
+    // Check if on mobile or desktop
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+    if (isMobile) {
+        // On mobile, redirect directly
+        const sessionId = generateSessionId();
+        window.location.href = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
+    } else {
+        // On desktop/tablet, show QR code
+        showQRCode();
+    }
+});
+
+function generateSessionId() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+function showQRCode() {
+    const sessionId = generateSessionId();
+    const verifyUrl = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
+
+    // Hide other states
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('qr').classList.add('active');
+
+    // Generate QR code
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+
+    new QRCode(qrContainer, {
+        text: verifyUrl,
+        width: 200,
+        height: 200,
+        colorDark: '#1A1A1A',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Poll for verification completion (would need backend)
+    // For now, just show the QR code
+}
+
 // Bank card click handler
 document.getElementById('bankCard').addEventListener('click', async () => {
     try {
@@ -160,6 +205,13 @@ function handleOAuthError(error) {
 // Retry button handler
 document.getElementById('retryBtn').addEventListener('click', () => {
     document.getElementById('error').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+});
+
+// QR back button handler
+document.getElementById('qrBackBtn').addEventListener('click', () => {
+    document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
 });
