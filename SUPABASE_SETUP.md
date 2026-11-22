@@ -37,11 +37,9 @@ supabase functions deploy get-account
 In `index.html`, update the Edge Function URLs to match your Supabase project:
 
 ```javascript
-const CREATE_SESSION_URL = 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/create-session';
-const GET_ACCOUNT_URL = 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/get-account';
+const CREATE_SESSION_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/create-session';
+const GET_ACCOUNT_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/get-account';
 ```
-
-Replace `YOUR_PROJECT_REF` with your actual Supabase project reference.
 
 ## How it works
 
