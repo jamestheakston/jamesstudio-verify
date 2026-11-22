@@ -294,6 +294,7 @@ async function handleOAuthCallback(code) {
         }
 
         accountDetails.innerHTML = html;
+        accountDetails.prepend(buildBankRow(account));
 
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -307,6 +308,42 @@ async function handleOAuthCallback(code) {
         document.getElementById('header').style.display = 'block';
         document.getElementById('cards').style.display = 'flex';
     }
+}
+
+// Bank logo + name row. Uses account.logoUrl if the backend returns one,
+// otherwise falls back to the bank's initial.
+function buildBankRow(account) {
+    const row = document.createElement('div');
+    row.className = 'bank-row';
+
+    const name = account.institutionName || 'Your bank';
+    const logoUrl = account.logoUrl;
+
+    function addInitial() {
+        const tile = document.createElement('div');
+        tile.className = 'bank-logo';
+        tile.textContent = name.charAt(0).toUpperCase();
+        row.prepend(tile);
+    }
+
+    if (typeof logoUrl === 'string' && logoUrl.startsWith('https://')) {
+        const img = document.createElement('img');
+        img.className = 'bank-logo';
+        img.alt = '';
+        img.src = logoUrl;
+        img.onerror = () => {
+            img.remove();
+            addInitial();
+        };
+        row.appendChild(img);
+    } else {
+        addInitial();
+    }
+
+    const label = document.createElement('span');
+    label.textContent = name;
+    row.appendChild(label);
+    return row;
 }
 
 function handleOAuthError(error) {
