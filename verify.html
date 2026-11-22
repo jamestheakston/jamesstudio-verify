@@ -261,17 +261,41 @@
 
         if (sessionId) {
             document.getElementById('sessionId').textContent = sessionId;
+            
+            // Check if session exists in database and mark as completed
+            checkAndCompleteSession(sessionId);
         } else {
             document.getElementById('sessionId').textContent = 'No session found';
+        }
+
+        async function checkAndCompleteSession(sessionId) {
+            try {
+                console.log('Checking if session exists:', sessionId);
+                const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Session data:', data);
+                    
+                    if (data.status) {
+                        // Session exists, mark it as completed
+                        console.log('Session exists, marking as completed');
+                        await markSessionCompleted(sessionId);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+            }
         }
 
         // Check if started from mobile
         if (fromParam === 'mobile') {
             console.log('Started from mobile, showing success immediately');
-            // User started verification on mobile
-            // Mark session as completed immediately for testing
-            markSessionCompleted(sessionId);
-            
             document.getElementById('header').style.display = 'none';
             document.getElementById('sessionInfo').style.display = 'none';
             document.getElementById('methods').style.display = 'none';
