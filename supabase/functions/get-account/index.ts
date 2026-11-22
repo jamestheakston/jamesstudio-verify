@@ -80,12 +80,17 @@ serve(async (req) => {
         ? account.account_number.nat.substring(account.account_number.nat.length - 4)
         : '****'
 
+      // Bank logo from TrueLayer's provider info (force https, null if missing)
+      const rawLogo: string | undefined = account.provider?.logo_uri
+      const logoUrl = rawLogo ? rawLogo.replace(/^http:\/\//, 'https://') : null
+
       return new Response(
         JSON.stringify({
           account: {
             id: account.account_id,
             displayName: account.display_name,
             institutionName: account.provider?.display_name || 'Unknown',
+            logoUrl: logoUrl,
             last4: last4,
             currency: account.currency,
             type: account.account_type
