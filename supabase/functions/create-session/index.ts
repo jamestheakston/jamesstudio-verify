@@ -14,6 +14,10 @@ serve(async (req) => {
   }
 
   try {
+    // Optional: Check for authorization header but don't fail if missing
+    const authHeader = req.headers.get('authorization')
+    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeSecretKey) {
       throw new Error('STRIPE_SECRET_KEY is not set')
