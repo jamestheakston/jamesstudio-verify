@@ -219,6 +219,16 @@
                 <h3>Phone Call</h3>
                 <p>Receive a verification code via phone call</p>
             </div>
+
+            <div class="method" id="completeMethod" style="background: #1A1A1A; border-color: #1A1A1A;">
+                <div class="method-icon" style="background: rgba(255,255,255,0.1);">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: white;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 style="color: white;">Complete Verification</h3>
+                <p style="color: rgba(255,255,255,0.7);">Mark this session as verified</p>
+            </div>
         </div>
 
         <div class="success" id="success" style="display: none; text-align: center; padding: 40px 0;">
@@ -326,6 +336,18 @@
         // Placeholder for phone call verification
         document.getElementById('callMethod').addEventListener('click', () => {
             alert('Phone call verification coming soon');
+        });
+
+        // Complete verification button
+        document.getElementById('completeMethod').addEventListener('click', () => {
+            markSessionCompleted(sessionId);
+            
+            document.getElementById('header').style.display = 'none';
+            document.getElementById('sessionInfo').style.display = 'none';
+            document.getElementById('methods').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('successTitle').textContent = 'Identity Complete';
+            document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
         });
     </script>
 </body>
