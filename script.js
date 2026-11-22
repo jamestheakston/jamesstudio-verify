@@ -57,6 +57,8 @@ function showQRCode() {
     document.getElementById('cards').style.display = 'none';
     document.getElementById('qr').classList.add('active');
 
+    resetQRExpiry();
+
     // Generate QR code using qrcodejs
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = '';
@@ -164,12 +166,21 @@ async function pollForCompletion(sessionId) {
         }
     }, 3000); // Poll every 3 seconds
 
-    // Give up after 5 minutes
-    qrPollTimeout = setTimeout(() => {
-        stopPolling();
-        const status = document.querySelector('.qr-loading');
-        if (status) status.textContent = 'This QR code has expired. Go back and try again.';
-    }, 5 * 60 * 1000);
+    // Expire the QR code after 5 minutes
+    qrPollTimeout = setTimeout(expireQR, 5 * 60 * 1000);
+}
+
+function expireQR() {
+    stopPolling();
+    document.getElementById('qrExpiredOverlay').style.display = 'flex';
+    document.getElementById('qrRefreshBtn').style.display = 'inline-block';
+    document.querySelector('.qr-loading').textContent = 'This QR code has expired.';
+}
+
+function resetQRExpiry() {
+    document.getElementById('qrExpiredOverlay').style.display = 'none';
+    document.getElementById('qrRefreshBtn').style.display = 'none';
+    document.querySelector('.qr-loading').textContent = 'Waiting for mobile verification...';
 }
 
 function showCompletionSuccess() {
@@ -442,6 +453,36 @@ document.getElementById('retryBtn').addEventListener('click', () => {
     document.getElementById('cards').style.display = 'flex';
 });
 
+// New QR code after expiry
+document.getElementById('qrRefreshBtn').addEventListener('click', showQRCode);
+
+// ---- Link parameters screen (method list only) ----
+document.getElementById('paramsLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('params').classList.add('active');
+});
+
+document.getElementById('paramsBackBtn').addEventListener('click', () => {
+    document.getElementById('params').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+});
+
+document.querySelectorAll('.copy-param').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+        const link = window.location.origin + window.location.pathname + btn.dataset.query;
+        try {
+            await navigator.clipboard.writeText(link);
+            btn.textContent = 'Copied';
+        } catch (err) {
+            btn.textContent = 'Failed';
+        }
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+    });
+});
+
 // QR back button handler
 document.getElementById('qrBackBtn').addEventListener('click', () => {
     stopPolling();
@@ -449,3 +490,14 @@ document.getElementById('qrBackBtn').addEventListener('click', () => {
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
 });
+
+// ?method=bank or ?method=human skips the method list
+(function () {
+    if (error || authCode) return;
+    const method = (urlParams.get("method") || "").toLowerCase();
+    if (method === "bank") {
+        showConsent();
+    } else if (method === "human" && !isMobile) {
+        showQRCode();
+    }
+})();
