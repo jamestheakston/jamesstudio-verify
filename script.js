@@ -75,7 +75,9 @@ function showQRCode() {
             console.log('Link href set to:', qrLink.href);
             
             qrLink.onclick = (e) => {
-                console.log('Link clicked, going to:', qrLink.href);
+                e.preventDefault();
+                console.log('Link clicked, navigating to:', verifyUrl);
+                window.location.href = verifyUrl;
             };
         } else {
             console.error('qrLink element not found');
