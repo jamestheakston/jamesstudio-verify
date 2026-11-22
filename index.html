@@ -240,6 +240,12 @@
             font-weight: 600;
         }
 
+        .owner-info {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e5e5;
+        }
+
         @media (max-width: 400px) {
             .mobile-screen {
                 padding: 32px 24px;
@@ -300,95 +306,6 @@
         </div>
     </div>
 
-    <script>
-        // Initialize Stripe with your publishable key
-        const stripe = Stripe('pk_live_51Tq7EiQRqfK4ur9ZYyoOe8n9AbbBThgho04cmlfyV1JfpnunCsVHebJ7NZkM8F3SyHnzjmzagBLl1p6KxfrjHk0b00ZIuOwmuv');
-
-        // Supabase Edge Function URLs
-        const CREATE_SESSION_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/create-session';
-        const GET_ACCOUNT_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/get-account';
-
-        let currentSessionId = null;
-
-        // Bank card click handler
-        document.getElementById('bankCard').addEventListener('click', async () => {
-            try {
-                // Show loading state
-                document.getElementById('header').style.display = 'none';
-                document.getElementById('cards').style.display = 'none';
-                document.getElementById('loading').classList.add('active');
-
-                // Create Financial Connections Session
-                const response = await fetch(CREATE_SESSION_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        customerEmail: null // You can pass an email for return user optimization
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to create session');
-                }
-
-                const { clientSecret, sessionId } = await response.json();
-                currentSessionId = sessionId;
-
-                // Launch Stripe Financial Connections flow
-                const result = await stripe.collectFinancialConnectionsAccounts({
-                    clientSecret: clientSecret,
-                });
-
-                if (result.error) {
-                    throw new Error(result.error.message);
-                }
-
-                // Get account details
-                const accountResponse = await fetch(GET_ACCOUNT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sessionId: currentSessionId
-                    })
-                });
-
-                if (!accountResponse.ok) {
-                    throw new Error('Failed to retrieve account details');
-                }
-
-                const { account, ownership } = await accountResponse.json();
-
-                // Show success state
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('success').classList.add('active');
-
-                // Display account details
-                const accountDetails = document.getElementById('accountDetails');
-                accountDetails.innerHTML = `
-                    <p><strong>Bank:</strong> ${account.institutionName}</p>
-                    <p><strong>Account:</strong> ${account.displayName} (...${account.last4})</p>
-                    <p><strong>Type:</strong> ${account.category} - ${account.subcategory}</p>
-                    ${ownership.length > 0 ? `
-                        <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5;">
-                            <strong>Account Owner:</strong> ${ownership[0].name}
-                        </p>
-                    ` : ''}
-                `;
-
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Verification failed: ' + error.message);
-
-                // Reset to initial state
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('header').style.display = 'block';
-                document.getElementById('cards').style.display = 'flex';
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
