@@ -286,8 +286,9 @@
         }
 
         async function markSessionCompleted(sessionId) {
+            console.log('Marking session as completed:', sessionId);
             try {
-                await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+                const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -295,6 +296,15 @@
                     },
                     body: JSON.stringify({ status: 'completed' })
                 });
+                
+                console.log('Mark completed response:', response.status);
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    console.error('Failed to mark completed:', response.status, error);
+                } else {
+                    console.log('Session marked as completed successfully');
+                }
             } catch (error) {
                 console.error('Error marking session as completed:', error);
             }
