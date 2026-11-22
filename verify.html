@@ -384,15 +384,6 @@
                             document.getElementById('successTitle').textContent = 'Identity Complete';
                             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
                         }
-                    } else if (response.status === 404) {
-                        // Session was deleted, assume completed
-                        console.log('Session deleted, assuming completed');
-                        clearInterval(pollInterval);
-                        document.getElementById('header').style.display = 'none';
-                        document.getElementById('sessionInfo').style.display = 'none';
-                        document.getElementById('success').style.display = 'block';
-                        document.getElementById('successTitle').textContent = 'Identity Complete';
-                        document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
                     } else {
                         console.error('Poll request failed:', response.status);
                     }
