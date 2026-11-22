@@ -39,9 +39,6 @@ serve(async (req) => {
         customer: customerId
       },
       permissions: ['payment_method', 'ownership'], // For account ownership verification
-      filters: {
-        countries: ['GB'], // UK bank accounts
-      }
     })
 
     return new Response(
