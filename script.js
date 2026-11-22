@@ -204,6 +204,7 @@ document.getElementById('consentContinueBtn').addEventListener('click', () => {
 });
 
 async function startBankVerification() {
+    document.getElementById('loadingText').textContent = 'Connecting to your bank...';
     try {
         // Show loading state
         document.getElementById('header').style.display = 'none';
