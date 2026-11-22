@@ -27,6 +27,7 @@ serve(async (req) => {
     console.log('Auth code length:', code?.length)
 
     // Exchange authorization code for access token
+    console.log('Attempting token exchange...')
     const tokenResponse = await fetch('https://api.truelayer.com/oauth2/token', {
       method: 'POST',
       headers: {
@@ -40,12 +41,16 @@ serve(async (req) => {
       })
     })
 
+    console.log('Token response status:', tokenResponse.status)
+
     if (!tokenResponse.ok) {
       const error = await tokenResponse.text()
+      console.log('Token exchange error:', error)
       throw new Error(`Token exchange failed: ${error}`)
     }
 
     const tokenData = await tokenResponse.json()
+    console.log('Token received, access_token length:', tokenData.access_token?.length)
 
     // Get account info using the access token
     const accountsResponse = await fetch('https://api.truelayer.com/data/v1/accounts', {
