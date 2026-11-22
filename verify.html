@@ -323,11 +323,11 @@
         } else {
             console.log('Started from QR scan (desktop), polling for completion');
             // User scanned QR code from desktop
-            document.getElementById('header').innerHTML = '<h1>Continue on Your Other Device</h1><p>Complete verification on your mobile device</p>';
+            document.getElementById('header').style.display = 'none';
             document.getElementById('methods').style.display = 'none';
             
-            // Show loading message
-            document.getElementById('sessionInfo').innerHTML = '<p style="font-size: 14px; color: #666;">Waiting for verification...</p>';
+            // Show loading spinner
+            document.getElementById('sessionInfo').innerHTML = '<div class="loading-spinner"></div><p style="font-size: 14px; color: #666;">Verifying...</p>';
 
             // Poll for completion
             pollForCompletion(sessionId);
