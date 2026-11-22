@@ -255,6 +255,10 @@
         const SESSION_STATUS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/session-status';
         const SUPABASE_ANON_KEY = 'sb_publishable_Raqakv5Z4U8Wr7zmzIvLDA_TsnBSFyS';
 
+        console.log('verify.html loaded');
+        console.log('Session ID:', sessionId);
+        console.log('From param:', fromParam);
+
         if (sessionId) {
             document.getElementById('sessionId').textContent = sessionId;
         } else {
@@ -263,6 +267,7 @@
 
         // Check if started from mobile
         if (fromParam === 'mobile') {
+            console.log('Started from mobile, showing success immediately');
             // User started verification on mobile
             // Mark session as completed immediately for testing
             markSessionCompleted(sessionId);
@@ -274,6 +279,7 @@
             document.getElementById('successTitle').textContent = 'Identity Complete';
             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
         } else {
+            console.log('Started from QR scan (desktop), polling for completion');
             // User scanned QR code from desktop
             document.getElementById('header').innerHTML = '<h1>Continue on Your Other Device</h1><p>Complete verification on your mobile device</p>';
             document.getElementById('methods').style.display = 'none';
@@ -311,6 +317,7 @@
         }
 
         function pollForCompletion(sessionId) {
+            console.log('Starting poll for session:', sessionId);
             const pollInterval = setInterval(async () => {
                 try {
                     const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
@@ -320,10 +327,14 @@
                         }
                     });
 
+                    console.log('Poll response status:', response.status);
+
                     if (response.ok) {
                         const data = await response.json();
+                        console.log('Session status:', data);
                         
                         if (data.status === 'completed') {
+                            console.log('Session completed!');
                             clearInterval(pollInterval);
                             document.getElementById('header').style.display = 'none';
                             document.getElementById('sessionInfo').style.display = 'none';
@@ -331,6 +342,8 @@
                             document.getElementById('successTitle').textContent = 'Identity Complete';
                             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
                         }
+                    } else {
+                        console.error('Poll request failed:', response.status);
                     }
                 } catch (error) {
                     console.error('Error checking session status:', error);
