@@ -227,7 +227,7 @@ async function handleOAuthCallback(code) {
         // Get account details
         console.log('Exchanging code for account details');
         console.log('Redirect URI:', redirectUri);
-        console.log('Auth code:', code.substring(0, 10) + '...');
+        console.log('Auth code:', code ? code.substring(0, 10) + '...' : 'No code');
 
         const accountResponse = await fetch(GET_ACCOUNT_URL, {
             method: 'POST',
