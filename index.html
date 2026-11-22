@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         * {
             margin: 0;
@@ -153,6 +154,96 @@
             border-radius: 6px;
         }
 
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e5e5;
+            border-top-color: #1a1a1a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .success {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .success.active {
+            display: block;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .success-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        .success h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .success p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .account-details {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+        }
+
+        .account-details p {
+            font-size: 13px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .account-details p:last-child {
+            margin-bottom: 0;
+        }
+
+        .account-details strong {
+            font-weight: 600;
+        }
+
         @media (max-width: 400px) {
             .mobile-screen {
                 border-radius: 20px;
@@ -163,13 +254,13 @@
 </head>
 <body>
     <div class="mobile-screen">
-        <div class="header">
+        <div class="header" id="header">
             <h1>How would you like to verify your identity?</h1>
             <p>Choose a verification method to continue</p>
         </div>
 
-        <div class="cards">
-            <div class="card active">
+        <div class="cards" id="cards">
+            <div class="card active" id="bankCard">
                 <div class="card-icon">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -190,6 +281,115 @@
                 <p>Upload a photo of your ID document</p>
             </div>
         </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Connecting to your bank...</p>
+        </div>
+
+        <div class="success" id="success">
+            <div class="success-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2>Identity Verified</h2>
+            <p>Your bank account ownership has been confirmed</p>
+            <div class="account-details" id="accountDetails">
+                <!-- Account details will be inserted here -->
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Initialize Stripe with your publishable key
+        const stripe = Stripe('pk_live_YOUR_PUBLISHABLE_KEY_HERE');
+
+        // Supabase Edge Function URLs - update these with your actual URLs
+        const CREATE_SESSION_URL = '/functions/v1/create-session';
+        const GET_ACCOUNT_URL = '/functions/v1/get-account';
+
+        let currentSessionId = null;
+
+        // Bank card click handler
+        document.getElementById('bankCard').addEventListener('click', async () => {
+            try {
+                // Show loading state
+                document.getElementById('header').style.display = 'none';
+                document.getElementById('cards').style.display = 'none';
+                document.getElementById('loading').classList.add('active');
+
+                // Create Financial Connections Session
+                const response = await fetch(CREATE_SESSION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customerEmail: null // You can pass an email for return user optimization
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create session');
+                }
+
+                const { clientSecret, sessionId } = await response.json();
+                currentSessionId = sessionId;
+
+                // Launch Stripe Financial Connections flow
+                const result = await stripe.collectFinancialConnectionsAccounts({
+                    clientSecret: clientSecret,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+
+                // Get account details
+                const accountResponse = await fetch(GET_ACCOUNT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: currentSessionId
+                    })
+                });
+
+                if (!accountResponse.ok) {
+                    throw new Error('Failed to retrieve account details');
+                }
+
+                const { account, ownership } = await accountResponse.json();
+
+                // Show success state
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('success').classList.add('active');
+
+                // Display account details
+                const accountDetails = document.getElementById('accountDetails');
+                accountDetails.innerHTML = `
+                    <p><strong>Bank:</strong> ${account.institutionName}</p>
+                    <p><strong>Account:</strong> ${account.displayName} (...${account.last4})</p>
+                    <p><strong>Type:</strong> ${account.category} - ${account.subcategory}</p>
+                    ${ownership.length > 0 ? `
+                        <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5;">
+                            <strong>Account Owner:</strong> ${ownership[0].name}
+                        </p>
+                    ` : ''}
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Verification failed: ' + error.message);
+
+                // Reset to initial state
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('header').style.display = 'block';
+                document.getElementById('cards').style.display = 'flex';
+            }
+        });
+    </script>
 </body>
 </html>
