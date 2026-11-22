@@ -29,7 +29,11 @@ serve(async (req) => {
     // Exchange authorization code for access token
     console.log('Attempting token exchange...')
     
-    const tokenResponse = await fetch('https://auth.truelayer.com/connect/token', {
+    // Use sandbox endpoint for test mode
+    const tokenUrl = 'https://auth.truelayer-sandbox.com/connect/token'
+    console.log('Using token endpoint:', tokenUrl)
+    
+    const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
