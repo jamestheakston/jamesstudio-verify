@@ -57,6 +57,11 @@
             text-decoration: none;
         }
 
+        /* Centre the logo on every screen except the method list */
+        .mobile-screen:has(#cards[style*="display: none"]) .logo {
+            justify-content: center;
+        }
+
         .logo-pill {
             background: #1A1A1A;
             color: #FAF9F6;
