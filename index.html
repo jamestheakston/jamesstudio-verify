@@ -268,6 +268,77 @@
             margin-top: 10px;
         }
 
+        .consent-steps {
+            list-style: none;
+            counter-reset: step;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .consent-steps-title {
+            width: 100%;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .consent-steps li {
+            counter-increment: step;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #1A1A1A;
+            padding: 6px 0;
+        }
+
+        .consent-steps li::before {
+            content: counter(step);
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid #1A1A1A;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .consent-links {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .consent-links a {
+            color: #1A1A1A;
+            text-decoration: underline;
+        }
+
+        /* Fade transition whenever a screen is shown */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header, .cards, .consent.active, .loading.active, .success.active, .error.active, .qr.active {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .header, .cards, .consent.active, .loading.active, .success.active, .error.active, .qr.active {
+                animation: none;
+            }
+        }
+
         .consent-actions {
             display: flex;
             gap: 12px;
@@ -645,6 +716,18 @@
                 <p>We'll only see your bank name, account name, the last 4 digits of your account number, account type and the name of the account holder. We can't see your balance or transactions, and we can't make payments.</p>
                 <p>Your bank login details are never shared with us. You can cancel at any time.</p>
             </div>
+            <p class="consent-steps-title">What happens next</p>
+            <ol class="consent-steps">
+                <li>Pick your bank</li>
+                <li>Approve access in your banking app</li>
+                <li>Come back here to finish</li>
+            </ol>
+            <p class="consent-links">
+                By continuing, you agree to TrueLayer's
+                <a href="https://truelayer.com/enduser_tos/" target="_blank" rel="noopener noreferrer">Terms</a>
+                and
+                <a href="https://truelayer.com/privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+            </p>
             <div class="consent-actions">
                 <button class="btn btn-secondary" id="consentCancelBtn">Cancel</button>
                 <button class="btn btn-primary" id="consentContinueBtn">Continue</button>
