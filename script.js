@@ -43,7 +43,7 @@ document.getElementById('phoneCard').addEventListener('click', () => {
 });
 
 function generateSessionId() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return crypto.randomUUID();
 }
 
 function showQRCode() {
@@ -123,10 +123,21 @@ async function initializeSession(sessionId) {
     }
 }
 
+let qrPollInterval = null;
+let qrPollTimeout = null;
+
+function stopPolling() {
+    clearInterval(qrPollInterval);
+    clearTimeout(qrPollTimeout);
+    qrPollInterval = null;
+    qrPollTimeout = null;
+}
+
 async function pollForCompletion(sessionId) {
     console.log('Starting to poll for session:', sessionId);
     
-    const pollInterval = setInterval(async () => {
+    stopPolling();
+    qrPollInterval = setInterval(async () => {
         try {
             const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
                 method: 'GET',
@@ -142,7 +153,7 @@ async function pollForCompletion(sessionId) {
                 console.log('Session status:', data);
                 
                 if (data.status === 'completed') {
-                    clearInterval(pollInterval);
+                    stopPolling();
                     showCompletionSuccess();
                 }
             } else {
@@ -152,6 +163,13 @@ async function pollForCompletion(sessionId) {
             console.error('Error polling session status:', error);
         }
     }, 3000); // Poll every 3 seconds
+
+    // Give up after 5 minutes
+    qrPollTimeout = setTimeout(() => {
+        stopPolling();
+        const status = document.querySelector('.qr-loading');
+        if (status) status.textContent = 'This QR code has expired. Go back and try again.';
+    }, 5 * 60 * 1000);
 }
 
 function showCompletionSuccess() {
@@ -277,24 +295,19 @@ async function handleOAuthCallback(code) {
         document.getElementById('loading').classList.remove('active');
         document.getElementById('success').classList.add('active');
 
-        // Display account details
+        // Display account details (built with textContent, never innerHTML)
         const accountDetails = document.getElementById('accountDetails');
-        let html = `
-            <p><strong>Bank:</strong> ${account.institutionName}</p>
-            <p><strong>Account:</strong> ${account.displayName} (...${account.last4})</p>
-            <p><strong>Type:</strong> ${account.type}</p>
-        `;
+        accountDetails.innerHTML = '';
+        accountDetails.appendChild(buildBankRow(account));
 
+        const hasDigits = account.last4 && /^\d{4}$/.test(account.last4);
+        const accountText = (account.displayName ? toTitleCase(account.displayName) : 'Account')
+            + (hasDigits ? ` (...${account.last4})` : '');
+        addDetail(accountDetails, 'Account', accountText);
+        addDetail(accountDetails, 'Type', formatAccountType(account.type));
         if (owner && owner.name) {
-            html += `
-                <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5;">
-                    <strong>Account Owner:</strong> ${owner.name}
-                </p>
-            `;
+            addDetail(accountDetails, 'Account Owner', toTitleCase(owner.name), true);
         }
-
-        accountDetails.innerHTML = html;
-        accountDetails.prepend(buildBankRow(account));
 
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -310,13 +323,44 @@ async function handleOAuthCallback(code) {
     }
 }
 
+// Only changes ALL CAPS text, so names like "FlexOne" are left alone
+function toTitleCase(s) {
+    if (!s) return '';
+    if (s !== s.toUpperCase()) return s;
+    return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function formatAccountType(t) {
+    const map = {
+        TRANSACTION: 'Current account',
+        SAVINGS: 'Savings account',
+        BUSINESS_TRANSACTION: 'Business current account',
+        BUSINESS_SAVINGS: 'Business savings account'
+    };
+    return map[t] || toTitleCase(String(t || '').replace(/_/g, ' ')) || 'Account';
+}
+
+function addDetail(parent, label, value, divider) {
+    const p = document.createElement('p');
+    if (divider) {
+        p.style.marginTop = '12px';
+        p.style.paddingTop = '12px';
+        p.style.borderTop = '1px solid #e5e5e5';
+    }
+    const strong = document.createElement('strong');
+    strong.textContent = label + ': ';
+    p.appendChild(strong);
+    p.appendChild(document.createTextNode(value));
+    parent.appendChild(p);
+}
+
 // Bank logo + name row. Uses account.logoUrl if the backend returns one,
 // otherwise falls back to the bank's initial.
 function buildBankRow(account) {
     const row = document.createElement('div');
     row.className = 'bank-row';
 
-    const name = account.institutionName || 'Your bank';
+    const name = toTitleCase(account.institutionName) || 'Your bank';
     const logoUrl = account.logoUrl;
 
     function addInitial() {
@@ -372,10 +416,19 @@ function handleOAuthError(error) {
     } else {
         errorTitle.textContent = 'Verification Failed';
         errorMessage.textContent = 'Something went wrong during the verification process.';
-        errorInfo.innerHTML = `
-            <p><strong>Error:</strong> ${error}</p>
-            <p><strong>What to do:</strong> Click "Try Again" to restart the verification process. If the problem persists, please contact support.</p>
-        `;
+        errorInfo.innerHTML = '';
+        const errP = document.createElement('p');
+        const errLabel = document.createElement('strong');
+        errLabel.textContent = 'Error: ';
+        errP.appendChild(errLabel);
+        errP.appendChild(document.createTextNode(error));
+        const todoP = document.createElement('p');
+        const todoLabel = document.createElement('strong');
+        todoLabel.textContent = 'What to do: ';
+        todoP.appendChild(todoLabel);
+        todoP.appendChild(document.createTextNode('Click "Try Again" to restart the verification process. If the problem persists, please contact support.'));
+        errorInfo.appendChild(errP);
+        errorInfo.appendChild(todoP);
     }
 
     // Clean URL
@@ -391,6 +444,7 @@ document.getElementById('retryBtn').addEventListener('click', () => {
 
 // QR back button handler
 document.getElementById('qrBackBtn').addEventListener('click', () => {
+    stopPolling();
     document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
