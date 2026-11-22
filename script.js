@@ -47,6 +47,9 @@ function showQRCode() {
     document.getElementById('debugSessionId').textContent = sessionId;
     document.getElementById('debugStatus').textContent = 'Initializing...';
 
+    // Set the link href
+    document.getElementById('qrLink').href = verifyUrl;
+
     // Hide other states
     document.getElementById('header').style.display = 'none';
     document.getElementById('cards').style.display = 'none';
