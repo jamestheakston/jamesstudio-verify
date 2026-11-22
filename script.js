@@ -93,6 +93,8 @@ function showQRCode() {
 
 async function initializeSession(sessionId) {
     try {
+        // Show loading overlay
+        document.getElementById('qrLoadingOverlay').style.display = 'flex';
         document.getElementById('debugStatus').textContent = 'Creating session...';
         
         const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
@@ -104,6 +106,9 @@ async function initializeSession(sessionId) {
             body: JSON.stringify({ status: 'pending' })
         });
         
+        // Hide loading overlay
+        document.getElementById('qrLoadingOverlay').style.display = 'none';
+        
         if (!response.ok) {
             const error = await response.text();
             console.error('Session init failed:', response.status, error);
@@ -114,6 +119,7 @@ async function initializeSession(sessionId) {
         }
     } catch (error) {
         console.error('Error initializing session:', error);
+        document.getElementById('qrLoadingOverlay').style.display = 'none';
         document.getElementById('debugStatus').textContent = 'Error: ' + error.message;
     }
 }
@@ -155,6 +161,12 @@ async function pollForCompletion(sessionId) {
 }
 
 function showCompletionSuccess() {
+    // Get the session ID from debug info
+    const sessionId = document.getElementById('debugSessionId').textContent;
+    
+    // Delete the session from database
+    deleteSession(sessionId);
+    
     document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
@@ -162,6 +174,20 @@ function showCompletionSuccess() {
     // Show success UI
     document.getElementById('header').innerHTML = '<h1>Identity Complete</h1><p>Your identity has been verified successfully.</p>';
     document.getElementById('cards').style.display = 'none';
+}
+
+async function deleteSession(sessionId) {
+    try {
+        await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+        console.log('Session deleted:', sessionId);
+    } catch (error) {
+        console.error('Error deleting session:', error);
+    }
 }
 
 // Bank card click handler
