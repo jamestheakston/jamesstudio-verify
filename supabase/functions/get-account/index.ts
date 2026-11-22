@@ -16,11 +16,15 @@ serve(async (req) => {
     const truelayerClientId = Deno.env.get('TRUELAYER_CLIENT_ID')
     const truelayerClientSecret = Deno.env.get('TRUELAYER_CLIENT_SECRET')
 
+    console.log('Client ID:', truelayerClientId)
+
     if (!truelayerClientId || !truelayerClientSecret) {
       throw new Error('TrueLayer credentials not set')
     }
 
     const { code, redirectUri } = await req.json()
+    console.log('Redirect URI:', redirectUri)
+    console.log('Auth code length:', code?.length)
 
     // Exchange authorization code for access token
     const tokenResponse = await fetch('https://api.truelayer.com/oauth2/token', {

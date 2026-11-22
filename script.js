@@ -225,6 +225,10 @@ async function handleOAuthCallback(code) {
         document.getElementById('loading').classList.add('active');
 
         // Get account details
+        console.log('Exchanging code for account details');
+        console.log('Redirect URI:', redirectUri);
+        console.log('Auth code:', code.substring(0, 10) + '...');
+
         const accountResponse = await fetch(GET_ACCOUNT_URL, {
             method: 'POST',
             headers: {
