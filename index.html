@@ -6,7 +6,7 @@
     <title>Verify Your Identity</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
     <style>
         * {
@@ -16,13 +16,23 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #FAF9F6;
+            color: #1A1A1A;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        h1, h2, h3, .geometric-font {
+            font-family: 'Syne', sans-serif;
+            letter-spacing: -0.03em;
         }
 
         .mobile-screen {
@@ -31,10 +41,11 @@
             max-width: 375px;
             min-height: 667px;
             border-radius: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
             padding: 40px 24px;
             display: flex;
             flex-direction: column;
+            border: 1px solid #1A1A1A/10;
         }
 
         .header {
@@ -42,15 +53,15 @@
         }
 
         .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a1a;
-            line-height: 1.3;
-            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 800;
+            color: #1A1A1A;
+            line-height: 1.1;
+            margin-bottom: 12px;
         }
 
         .header p {
-            font-size: 14px;
+            font-size: 15px;
             color: #666;
             line-height: 1.5;
         }
@@ -63,56 +74,56 @@
 
         .card {
             background: white;
-            border: 2px solid #e5e5e5;
-            border-radius: 16px;
-            padding: 20px;
+            border: 2px solid #1A1A1A/10;
+            border-radius: 20px;
+            padding: 24px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
         }
 
         .card:hover {
-            border-color: #1a1a1a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #1A1A1A;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .card.active {
-            border-color: #1a1a1a;
+            border-color: #1A1A1A;
         }
 
         .card.disabled {
-            background: #f5f5f5;
-            border-color: #e5e5e5;
+            background: #FAF9F6;
+            border-color: #1A1A1A/10;
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.5;
         }
 
         .card.disabled:hover {
-            border-color: #e5e5e5;
+            border-color: #1A1A1A/10;
             transform: none;
             box-shadow: none;
         }
 
         .card-icon {
-            width: 48px;
-            height: 48px;
-            background: #f5f5f5;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            background: #FAF9F6;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .card.disabled .card-icon {
-            background: #e5e5e5;
+            background: #E5E5E5;
         }
 
         .card-icon svg {
-            width: 24px;
-            height: 24px;
-            color: #1a1a1a;
+            width: 28px;
+            height: 28px;
+            color: #1A1A1A;
         }
 
         .card.disabled .card-icon svg {
@@ -120,10 +131,10 @@
         }
 
         .card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 6px;
         }
 
         .card.disabled h3 {
@@ -131,9 +142,9 @@
         }
 
         .card p {
-            font-size: 13px;
+            font-size: 14px;
             color: #666;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .card.disabled p {
@@ -142,22 +153,22 @@
 
         .coming-soon-badge {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            background: #1a1a1a;
-            color: white;
+            top: 16px;
+            right: 16px;
+            background: #1A1A1A;
+            color: #FAF9F6;
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 4px 8px;
-            border-radius: 6px;
+            letter-spacing: 0.08em;
+            padding: 6px 12px;
+            border-radius: 9999px;
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 40px 0;
+            padding: 60px 0;
         }
 
         .loading.active {
@@ -165,13 +176,13 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e5e5e5;
-            border-top-color: #1a1a1a;
+            width: 48px;
+            height: 48px;
+            border: 3px solid #1A1A1A/10;
+            border-top-color: #1A1A1A;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -179,8 +190,9 @@
         }
 
         .loading p {
-            font-size: 14px;
+            font-size: 15px;
             color: #666;
+            font-weight: 500;
         }
 
         .success {
@@ -194,46 +206,48 @@
         }
 
         .success-icon {
-            width: 64px;
-            height: 64px;
-            background: #10b981;
+            width: 72px;
+            height: 72px;
+            background: #1A1A1A;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 16px;
+            margin: 0 auto 20px;
         }
 
         .success-icon svg {
-            width: 32px;
-            height: 32px;
-            color: white;
+            width: 36px;
+            height: 36px;
+            color: #FAF9F6;
         }
 
         .success h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1A1A1A;
             margin-bottom: 8px;
         }
 
         .success p {
-            font-size: 14px;
+            font-size: 15px;
             color: #666;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .account-details {
-            background: #f5f5f5;
-            border-radius: 12px;
-            padding: 16px;
+            background: #FAF9F6;
+            border: 1px solid #1A1A1A/10;
+            border-radius: 16px;
+            padding: 20px;
             text-align: left;
         }
 
         .account-details p {
-            font-size: 13px;
-            color: #1a1a1a;
-            margin-bottom: 8px;
+            font-size: 14px;
+            color: #1A1A1A;
+            margin-bottom: 10px;
+            line-height: 1.5;
         }
 
         .account-details p:last-child {
@@ -246,8 +260,13 @@
 
         @media (max-width: 400px) {
             .mobile-screen {
-                border-radius: 20px;
+                border-radius: 24px;
                 min-height: auto;
+                padding: 32px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
             }
         }
     </style>
