@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Stripe } from "https://esm.sh/stripe@14.21.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,58 +13,75 @@ serve(async (req) => {
   }
 
   try {
-    // Optional: Check for authorization header but don't fail if missing
-    const authHeader = req.headers.get('authorization')
-    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+    const truelayerClientId = Deno.env.get('TRUELAYER_CLIENT_ID')
+    const truelayerClientSecret = Deno.env.get('TRUELAYER_CLIENT_SECRET')
 
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not set')
+    if (!truelayerClientId || !truelayerClientSecret) {
+      throw new Error('TrueLayer credentials not set')
     }
 
-    const stripe = new Stripe(stripeSecretKey)
+    const { code, redirectUri } = await req.json()
 
-    const { sessionId } = await req.json()
-
-    // Retrieve the completed session
-    const session = await stripe.financialConnections.sessions.retrieve(sessionId)
-
-    if (session.status !== 'succeeded') {
-      throw new Error('Session not completed')
-    }
-
-    // Get the first linked account
-    const accountId = session.accounts.data[0].id
-
-    // Retrieve account with ownership details
-    const account = await stripe.financialConnections.accounts.retrieve(accountId, {
-      expand: ['ownership']
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch('https://api.truelayer.com/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: truelayerClientId,
+        client_secret: truelayerClientSecret,
+        redirect_uri: redirectUri,
+        code: code
+      })
     })
 
-    // Extract ownership information
-    const ownershipData = account.ownership?.data.map(owner => ({
-      name: owner.name,
-      address: owner.address,
-      email: owner.email
-    })) || []
+    if (!tokenResponse.ok) {
+      const error = await tokenResponse.text()
+      throw new Error(`Token exchange failed: ${error}`)
+    }
 
-    return new Response(
-      JSON.stringify({
-        account: {
-          id: account.id,
-          displayName: account.display_name,
-          institutionName: account.institution_name,
-          last4: account.last4,
-          category: account.category,
-          subcategory: account.subcategory,
-          status: account.status
-        },
-        ownership: ownershipData
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    const tokenData = await tokenResponse.json()
+
+    // Get account info using the access token
+    const accountsResponse = await fetch('https://api.truelayer.com/data/v1/accounts', {
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`
       }
-    )
+    })
+
+    if (!accountsResponse.ok) {
+      throw new Error('Failed to fetch accounts')
+    }
+
+    const accountsData = await accountsResponse.json()
+
+    // Get account details for the first account
+    if (accountsData.results && accountsData.results.length > 0) {
+      const account = accountsData.results[0]
+
+      return new Response(
+        JSON.stringify({
+          account: {
+            id: account.account_id,
+            displayName: account.display_name,
+            institutionName: account.provider.display_name,
+            last4: account.account_number.nat.substring(account.account_number.nat.length - 4),
+            currency: account.currency,
+            type: account.account_type
+          },
+          owner: {
+            name: account.account_holder_name
+          }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    throw new Error('No accounts found')
   } catch (error) {
     console.error('Error retrieving account:', error)
     return new Response(

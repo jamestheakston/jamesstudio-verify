@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Stripe } from "https://esm.sh/stripe@14.21.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,41 +13,29 @@ serve(async (req) => {
   }
 
   try {
-    // Optional: Check for authorization header but don't fail if missing
-    const authHeader = req.headers.get('authorization')
-    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+    const truelayerClientId = Deno.env.get('TRUELAYER_CLIENT_ID')
+    const truelayerClientSecret = Deno.env.get('TRUELAYER_CLIENT_SECRET')
 
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not set')
+    if (!truelayerClientId || !truelayerClientSecret) {
+      throw new Error('TrueLayer credentials not set')
     }
 
-    const stripe = new Stripe(stripeSecretKey)
+    const { redirectUri } = await req.json()
 
-    const { customerEmail } = await req.json()
+    // Generate TrueLayer OAuth URL
+    const authUrl = new URL('https://auth.truelayer.com')
+    authUrl.pathname = '/'
 
-    // Create a customer if email is provided (for return user optimization)
-    let customerId = null
-    if (customerEmail) {
-      const customer = await stripe.customers.create({
-        email: customerEmail
-      })
-      customerId = customer.id
-    }
-
-    // Create Financial Connections Session
-    const session = await stripe.financialConnections.sessions.create({
-      account_holder: {
-        type: 'customer',
-        customer: customerId
-      },
-      permissions: ['payment_method', 'ownership'], // For account ownership verification
-    })
+    authUrl.searchParams.set('response_type', 'code')
+    authUrl.searchParams.set('client_id', truelayerClientId)
+    authUrl.searchParams.set('nonce', Math.random().toString(36).substring(7))
+    authUrl.searchParams.set('redirect_uri', redirectUri)
+    authUrl.searchParams.set('scope', 'accounts info balance transactions')
+    authUrl.searchParams.set('enable_mock', 'false')
 
     return new Response(
       JSON.stringify({
-        clientSecret: session.client_secret,
-        sessionId: session.id
+        authUrl: authUrl.toString()
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
