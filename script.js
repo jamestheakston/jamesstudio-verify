@@ -177,8 +177,33 @@ function showCompletionSuccess() {
     document.getElementById('cards').style.display = 'none';
 }
 
-// Bank card click handler
-document.getElementById('bankCard').addEventListener('click', async () => {
+// Bank card click handler: show the consent screen first
+document.getElementById('bankCard').addEventListener('click', () => {
+    showConsent();
+});
+
+function showConsent() {
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('consent').classList.add('active');
+}
+
+function hideConsent() {
+    document.getElementById('consent').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+}
+
+// Consent: Cancel goes back to the method list
+document.getElementById('consentCancelBtn').addEventListener('click', hideConsent);
+
+// Consent: Continue starts the TrueLayer flow
+document.getElementById('consentContinueBtn').addEventListener('click', () => {
+    document.getElementById('consent').classList.remove('active');
+    startBankVerification();
+});
+
+async function startBankVerification() {
     try {
         // Show loading state
         document.getElementById('header').style.display = 'none';
@@ -215,7 +240,7 @@ document.getElementById('bankCard').addEventListener('click', async () => {
         document.getElementById('header').style.display = 'block';
         document.getElementById('cards').style.display = 'flex';
     }
-});
+}
 
 async function handleOAuthCallback(code) {
     try {
