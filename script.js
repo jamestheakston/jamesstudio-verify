@@ -20,19 +20,26 @@ if (error) {
     handleOAuthCallback(authCode);
 }
 
+// Check if user is on mobile
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+// Disable phone verification on mobile
+if (isMobile) {
+    const phoneCard = document.getElementById('phoneCard');
+    phoneCard.classList.add('desktop-only');
+    phoneCard.classList.remove('active');
+    document.getElementById('phoneMessage').style.display = 'block';
+}
+
 // Phone card click handler
 document.getElementById('phoneCard').addEventListener('click', () => {
-    // Check if on mobile or desktop
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-
+    // Only allow on desktop
     if (isMobile) {
-        // On mobile, redirect directly with from=mobile parameter
-        const sessionId = generateSessionId();
-        window.location.href = `https://verify.jamesstudio.uk/verify?session=${sessionId}&from=mobile`;
-    } else {
-        // On desktop/tablet, show QR code
-        showQRCode();
+        return; // Do nothing on mobile
     }
+    
+    // On desktop/tablet, show QR code
+    showQRCode();
 });
 
 function generateSessionId() {

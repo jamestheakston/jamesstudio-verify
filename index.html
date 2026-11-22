@@ -136,6 +136,35 @@
             color: #999;
         }
 
+        .card.desktop-only {
+            background: #FAF9F6;
+            border-color: #E5E5E5;
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .card.desktop-only:hover {
+            border-color: #E5E5E5;
+        }
+
+        .card.desktop-only .card-icon svg {
+            color: #999;
+        }
+
+        .card.desktop-only h3 {
+            color: #999;
+        }
+
+        .card.desktop-only p {
+            color: #999;
+        }
+
+        .desktop-message {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
         .coming-soon-badge {
             position: absolute;
             top: 12px;
@@ -433,6 +462,7 @@
                 </div>
                 <h3>Phone Verification</h3>
                 <p>Verify using your mobile device</p>
+                <p class="desktop-message" id="phoneMessage" style="display: none;">Switch to desktop to use this method</p>
             </div>
 
             <div class="card disabled">
