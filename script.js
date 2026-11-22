@@ -9,8 +9,12 @@ const redirectUri = window.location.origin + window.location.pathname;
 // Check if we're returning from TrueLayer OAuth
 const urlParams = new URLSearchParams(window.location.search);
 const authCode = urlParams.get('code');
+const error = urlParams.get('error');
 
-if (authCode) {
+if (error) {
+    // Handle OAuth error
+    handleOAuthError(error);
+} else if (authCode) {
     // Handle OAuth callback
     handleOAuthCallback(authCode);
 }
@@ -115,4 +119,23 @@ async function handleOAuthCallback(code) {
         document.getElementById('header').style.display = 'block';
         document.getElementById('cards').style.display = 'flex';
     }
+}
+
+function handleOAuthError(error) {
+    console.error('OAuth error:', error);
+
+    // Reset to initial state
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+
+    // Show appropriate error message
+    if (error === 'access_denied') {
+        alert('Verification cancelled. You denied access to your bank account.');
+    } else {
+        alert('Verification failed: ' + error);
+    }
+
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
 }
