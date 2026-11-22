@@ -31,11 +31,10 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${btoa(`${truelayerClientId}:${truelayerClientSecret}`)}`
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
-        client_id: truelayerClientId,
-        client_secret: truelayerClientSecret,
         redirect_uri: redirectUri,
         code: code
       })
