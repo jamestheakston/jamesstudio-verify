@@ -47,7 +47,7 @@ function showQRCode() {
     document.getElementById('cards').style.display = 'none';
     document.getElementById('qr').classList.add('active');
 
-    // Generate QR code
+    // Generate QR code using qrcodejs
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = '';
 
