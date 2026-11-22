@@ -162,8 +162,16 @@ function showCompletionSuccess() {
     // Show success tick on phone card
     document.getElementById('phoneSuccessTick').style.display = 'flex';
     
-    // Show success UI
-    document.getElementById('header').innerHTML = '<h1>Identity Complete</h1><p>Your identity has been verified successfully.</p>';
+    // Show success UI with tick icon
+    document.getElementById('header').innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px;">
+            <svg width="32" height="32" fill="none" stroke="#10B981" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <h1 style="margin: 0;">Identity Verified</h1>
+        </div>
+        <p>Your identity has been verified successfully.</p>
+    `;
     document.getElementById('cards').style.display = 'none';
 }
 
