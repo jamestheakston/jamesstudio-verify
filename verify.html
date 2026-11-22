@@ -167,6 +167,16 @@
             font-weight: 700;
             color: #1A1A1A;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .success h2 svg {
+            width: 28px;
+            height: 28px;
+            color: #10B981;
         }
 
         .success p {
@@ -253,7 +263,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
-            <h2 id="successTitle">Identity Complete</h2>
+            <h2 id="successTitle">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Identity Verified
+            </h2>
             <p id="successMessage">Your identity has been verified successfully.</p>
         </div>
 
@@ -318,7 +333,12 @@
             document.getElementById('sessionInfo').style.display = 'none';
             document.getElementById('methods').style.display = 'none';
             document.getElementById('success').style.display = 'block';
-            document.getElementById('successTitle').textContent = 'Identity Complete';
+            document.getElementById('successTitle').innerHTML = `
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Identity Verified
+            `;
             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
         } else {
             console.log('Started from QR scan (desktop), polling for completion');
@@ -381,7 +401,12 @@
                             document.getElementById('header').style.display = 'none';
                             document.getElementById('sessionInfo').style.display = 'none';
                             document.getElementById('success').style.display = 'block';
-                            document.getElementById('successTitle').textContent = 'Identity Complete';
+                            document.getElementById('successTitle').innerHTML = `
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Identity Verified
+            `;
                             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
                         }
                     } else {
@@ -411,7 +436,12 @@
             document.getElementById('sessionInfo').style.display = 'none';
             document.getElementById('methods').style.display = 'none';
             document.getElementById('success').style.display = 'block';
-            document.getElementById('successTitle').textContent = 'Identity Complete';
+            document.getElementById('successTitle').innerHTML = `
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Identity Verified
+            `;
             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
         });
     </script>
