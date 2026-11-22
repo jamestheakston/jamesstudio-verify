@@ -45,6 +45,8 @@ function showQRCode() {
 
     // Store session ID globally for later use
     window.currentSessionId = sessionId;
+    // Mark that this was initiated from desktop
+    window.isDesktopInitiated = true;
 
     console.log('QR URL:', verifyUrl);
 
@@ -151,15 +153,6 @@ async function pollForCompletion(sessionId) {
 }
 
 function showCompletionSuccess() {
-    // Get the session ID from the stored variable
-    // We need to store it when creating the session
-    const currentSessionId = window.currentSessionId;
-    
-    if (currentSessionId) {
-        // Delete the session from database
-        deleteSession(currentSessionId);
-    }
-    
     document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
