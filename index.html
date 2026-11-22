@@ -43,8 +43,33 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         }
 
+        /* Logo */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            color: #1A1A1A;
+            text-decoration: none;
+        }
+
+        .logo-pill {
+            background: #1A1A1A;
+            color: #FAF9F6;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 3px 8px;
+            border-radius: 9999px;
+        }
+
         .header {
-            margin-bottom: 48px;
+            margin-bottom: 40px;
         }
 
         .header h1 {
@@ -181,6 +206,103 @@
             letter-spacing: 0.05em;
             padding: 4px 8px;
             border-radius: 9999px;
+        }
+
+        /* Consent screen */
+        .consent {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .consent.active {
+            display: flex;
+        }
+
+        .consent-icon {
+            width: 56px;
+            height: 56px;
+            background: #FAF9F6;
+            border: 1px solid #E5E5E5;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .consent-icon svg {
+            width: 26px;
+            height: 26px;
+            color: #1A1A1A;
+        }
+
+        .consent h2 {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #1A1A1A;
+            margin-bottom: 6px;
+        }
+
+        .consent-subtitle {
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .consent-description {
+            font-size: 13px;
+            color: #444;
+            line-height: 1.7;
+            text-align: left;
+            background: #FAF9F6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 28px;
+        }
+
+        .consent-description p + p {
+            margin-top: 10px;
+        }
+
+        .consent-actions {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1A1A1A;
+            border: 1px solid #E5E5E5;
+        }
+
+        .btn-secondary:hover {
+            border-color: #1A1A1A;
+        }
+
+        .btn-primary {
+            background: #1A1A1A;
+            color: white;
+            border: 1px solid #1A1A1A;
+        }
+
+        .btn-primary:hover {
+            background: #333;
         }
 
         .loading {
@@ -461,6 +583,10 @@
 </head>
 <body>
     <div class="mobile-screen">
+        <a class="logo" href="/index.html" aria-label="James Studio">
+            JAMES<span class="logo-pill">Studio</span>
+        </a>
+
         <div class="header" id="header">
             <h1>How would you like to verify your identity?</h1>
             <p>Choose a verification method to continue</p>
@@ -502,6 +628,26 @@
                 </div>
                 <h3>Verify with photo ID</h3>
                 <p>Upload a photo of your ID document</p>
+            </div>
+        </div>
+
+        <!-- Bank consent screen -->
+        <div class="consent" id="consent">
+            <div class="consent-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h2>Connect your bank</h2>
+            <p class="consent-subtitle">Secure, read-only verification</p>
+            <div class="consent-description">
+                <p>You'll be taken to TrueLayer, our secure banking partner, to sign in with your bank and approve access.</p>
+                <p>We'll only see your bank name, account name, the last 4 digits of your account number, account type and the name of the account holder. We can't see your balance or transactions, and we can't make payments.</p>
+                <p>Your bank login details are never shared with us. You can cancel at any time.</p>
+            </div>
+            <div class="consent-actions">
+                <button class="btn btn-secondary" id="consentCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="consentContinueBtn">Continue</button>
             </div>
         </div>
 
