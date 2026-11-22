@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Your Identity</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; connect-src 'self' https://pkqkqijmohbvfxxnzhyy.supabase.co https://api.truelayer.com https://auth.truelayer.com; frame-src 'self' https://auth.truelayer.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; connect-src 'self' https://pkqkqijmohbvfxxnzhyy.supabase.co https://api.truelayer.com https://auth.truelayer.com; frame-src 'self' https://auth.truelayer.com; img-src 'self' data: https://truelayer-client-logos.s3-eu-west-1.amazonaws.com;">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -339,6 +339,77 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .header .why {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .header .why strong {
+            color: #1A1A1A;
+            font-weight: 600;
+        }
+
+        .secured {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .secured svg {
+            width: 14px;
+            height: 14px;
+            color: #1A1A1A;
+        }
+
+        .loading .secured {
+            margin: 12px 0 0;
+        }
+
+        .support-link {
+            display: block;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1A1A1A;
+            text-decoration: underline;
+        }
+
+        .bank-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .bank-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            object-fit: contain;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .bank-row span {
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .consent-links {
@@ -695,6 +766,7 @@
         <div class="header" id="header">
             <h1>How would you like to verify your identity?</h1>
             <p>Choose a verification method to continue</p>
+            <p class="why"><strong>Why we ask:</strong> we check you're a real person to prevent fraud and keep client accounts safe.</p>
         </div>
 
         <div class="cards" id="cards">
@@ -763,6 +835,10 @@
                 and
                 <a href="https://truelayer.com/privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
             </p>
+            <p class="secured">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                Secured by TrueLayer
+            </p>
             <div class="consent-actions">
                 <button class="btn btn-secondary" id="consentCancelBtn">Cancel</button>
                 <button class="btn btn-primary" id="consentContinueBtn">Continue</button>
@@ -772,6 +848,10 @@
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p id="loadingText">Connecting to your bank...</p>
+            <p class="secured">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                Secured by TrueLayer
+            </p>
         </div>
 
         <div class="success" id="success">
@@ -800,6 +880,7 @@
                 <p><strong>What to do:</strong> Click "Try Again" to restart the verification process, or contact support if you continue to experience issues.</p>
             </div>
             <button class="retry-btn" id="retryBtn">Try Again</button>
+            <a class="support-link" href="/index.html#contact">Need help? Contact support</a>
         </div>
 
         <div class="qr" id="qr">
