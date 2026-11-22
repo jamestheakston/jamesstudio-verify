@@ -29,7 +29,7 @@ serve(async (req) => {
     // Exchange authorization code for access token
     console.log('Attempting token exchange...')
     
-    const tokenResponse = await fetch('https://api.truelayer.com/oauth2/token', {
+    const tokenResponse = await fetch('https://auth.truelayer.com/connect/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
