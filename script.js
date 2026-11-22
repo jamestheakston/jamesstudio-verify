@@ -43,6 +43,10 @@ function showQRCode() {
     const sessionId = generateSessionId();
     const verifyUrl = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
 
+    // Update debug info
+    document.getElementById('debugSessionId').textContent = sessionId;
+    document.getElementById('debugStatus').textContent = 'Initializing...';
+
     // Hide other states
     document.getElementById('header').style.display = 'none';
     document.getElementById('cards').style.display = 'none';
@@ -70,6 +74,8 @@ function showQRCode() {
 
 async function initializeSession(sessionId) {
     try {
+        document.getElementById('debugStatus').textContent = 'Creating session...';
+        
         const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
             method: 'POST',
             headers: {
@@ -82,11 +88,14 @@ async function initializeSession(sessionId) {
         if (!response.ok) {
             const error = await response.text();
             console.error('Session init failed:', response.status, error);
+            document.getElementById('debugStatus').textContent = 'Failed: ' + response.status;
         } else {
             console.log('Session initialized successfully');
+            document.getElementById('debugStatus').textContent = 'Polling...';
         }
     } catch (error) {
         console.error('Error initializing session:', error);
+        document.getElementById('debugStatus').textContent = 'Error: ' + error.message;
     }
 }
 
@@ -95,6 +104,8 @@ async function pollForCompletion(sessionId) {
     
     const pollInterval = setInterval(async () => {
         try {
+            document.getElementById('debugStatus').textContent = 'Checking...';
+            
             const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
                 method: 'GET',
                 headers: {
@@ -107,6 +118,7 @@ async function pollForCompletion(sessionId) {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Session status:', data);
+                document.getElementById('debugStatus').textContent = 'Status: ' + data.status;
                 
                 if (data.status === 'completed') {
                     clearInterval(pollInterval);
@@ -114,9 +126,11 @@ async function pollForCompletion(sessionId) {
                 }
             } else {
                 console.error('Poll request failed:', response.status);
+                document.getElementById('debugStatus').textContent = 'Failed: ' + response.status;
             }
         } catch (error) {
             console.error('Error polling session status:', error);
+            document.getElementById('debugStatus').textContent = 'Error: ' + error.message;
         }
     }, 3000); // Poll every 3 seconds
 }
