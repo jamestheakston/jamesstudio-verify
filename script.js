@@ -43,11 +43,6 @@ function showQRCode() {
     const sessionId = generateSessionId();
     const verifyUrl = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
 
-    // Store session ID globally for later use
-    window.currentSessionId = sessionId;
-    // Mark that this was initiated from desktop
-    window.isDesktopInitiated = true;
-
     console.log('QR URL:', verifyUrl);
 
     // Hide other states
