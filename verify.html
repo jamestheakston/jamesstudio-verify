@@ -242,6 +242,9 @@
         const sessionId = urlParams.get('session');
         const fromParam = urlParams.get('from');
 
+        const SESSION_STATUS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/session-status';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Raqakv5Z4U8Wr7zmzIvLDA_TsnBSFyS';
+
         if (sessionId) {
             document.getElementById('sessionId').textContent = sessionId;
         } else {
@@ -257,6 +260,9 @@
             document.getElementById('success').style.display = 'block';
             document.getElementById('successTitle').textContent = 'Identity Complete';
             document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
+            
+            // Mark session as completed
+            markSessionCompleted(sessionId);
         } else {
             // User scanned QR code from desktop
             document.getElementById('header').innerHTML = '<h1>Continue on Your Other Device</h1><p>Complete verification on your mobile device</p>';
@@ -265,36 +271,51 @@
             // Show loading message
             document.getElementById('sessionInfo').innerHTML = '<p style="font-size: 14px; color: #666;">Waiting for verification...</p>';
 
-            // Poll for completion (would need backend to track session status)
-            // For now, just show waiting message
+            // Poll for completion
             pollForCompletion(sessionId);
         }
 
+        async function markSessionCompleted(sessionId) {
+            try {
+                await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ status: 'completed' })
+                });
+            } catch (error) {
+                console.error('Error marking session as completed:', error);
+            }
+        }
+
         function pollForCompletion(sessionId) {
-            // Poll every 3 seconds for session completion
-            // This would need a backend endpoint to check session status
-            const checkStatus = async () => {
+            const pollInterval = setInterval(async () => {
                 try {
-                    // Replace with actual endpoint when backend is ready
-                    // const response = await fetch(`/api/session-status?session=${sessionId}`);
-                    // const data = await response.json();
-                    
-                    // For now, simulate after 30 seconds
-                    // In production, remove this timeout and use real polling
-                    setTimeout(() => {
-                        document.getElementById('header').style.display = 'none';
-                        document.getElementById('sessionInfo').style.display = 'none';
-                        document.getElementById('success').style.display = 'block';
-                        document.getElementById('successTitle').textContent = 'Identity Complete';
-                        document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
-                    }, 30000);
+                    const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.status === 'completed') {
+                            clearInterval(pollInterval);
+                            document.getElementById('header').style.display = 'none';
+                            document.getElementById('sessionInfo').style.display = 'none';
+                            document.getElementById('success').style.display = 'block';
+                            document.getElementById('successTitle').textContent = 'Identity Complete';
+                            document.getElementById('successMessage').textContent = 'Your identity has been verified successfully.';
+                        }
+                    }
                 } catch (error) {
                     console.error('Error checking session status:', error);
                 }
-            };
-
-            checkStatus();
-            // const pollInterval = setInterval(checkStatus, 3000);
+            }, 3000); // Poll every 3 seconds
         }
 
         // Placeholder for SMS verification

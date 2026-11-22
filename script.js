@@ -1,6 +1,7 @@
 // Supabase Edge Function URLs
 const CREATE_SESSION_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/create-session';
 const GET_ACCOUNT_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/get-account';
+const SESSION_STATUS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/session-status';
 const SUPABASE_ANON_KEY = 'sb_publishable_Raqakv5Z4U8Wr7zmzIvLDA_TsnBSFyS';
 
 // Get the current page URL for redirect
@@ -60,8 +61,59 @@ function showQRCode() {
         correctLevel: QRCode.CorrectLevel.H
     });
 
-    // Poll for verification completion (would need backend)
-    // For now, just show the QR code
+    // Initialize session status
+    initializeSession(sessionId);
+
+    // Poll for verification completion
+    pollForCompletion(sessionId);
+}
+
+async function initializeSession(sessionId) {
+    try {
+        await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ status: 'pending' })
+        });
+    } catch (error) {
+        console.error('Error initializing session:', error);
+    }
+}
+
+async function pollForCompletion(sessionId) {
+    const pollInterval = setInterval(async () => {
+        try {
+            const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.status === 'completed') {
+                    clearInterval(pollInterval);
+                    showCompletionSuccess();
+                }
+            }
+        } catch (error) {
+            console.error('Error polling session status:', error);
+        }
+    }, 3000); // Poll every 3 seconds
+}
+
+function showCompletionSuccess() {
+    document.getElementById('qr').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+    
+    // Show success message
+    alert('Verification completed successfully on your mobile device!');
 }
 
 // Bank card click handler
