@@ -74,14 +74,19 @@ serve(async (req) => {
     // Get account details for the first account
     if (accountsData.results && accountsData.results.length > 0) {
       const account = accountsData.results[0]
+      
+      // Safely get last 4 digits of account number
+      const last4 = account.account_number?.nat 
+        ? account.account_number.nat.substring(account.account_number.nat.length - 4)
+        : '****'
 
       return new Response(
         JSON.stringify({
           account: {
             id: account.account_id,
             displayName: account.display_name,
-            institutionName: account.provider.display_name,
-            last4: account.account_number.nat.substring(account.account_number.nat.length - 4),
+            institutionName: account.provider?.display_name || 'Unknown',
+            last4: last4,
             currency: account.currency,
             type: account.account_type
           },
