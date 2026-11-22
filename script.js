@@ -43,17 +43,21 @@ function showQRCode() {
     const sessionId = generateSessionId();
     const verifyUrl = `https://verify.jamesstudio.uk/verify?session=${sessionId}`;
 
+    console.log('QR URL:', verifyUrl);
+
     // Update debug info
     document.getElementById('debugSessionId').textContent = sessionId;
     document.getElementById('debugStatus').textContent = 'Initializing...';
-
-    // Set the link href
-    document.getElementById('qrLink').href = verifyUrl;
 
     // Hide other states
     document.getElementById('header').style.display = 'none';
     document.getElementById('cards').style.display = 'none';
     document.getElementById('qr').classList.add('active');
+
+    // Set the link href
+    const qrLink = document.getElementById('qrLink');
+    qrLink.href = verifyUrl;
+    console.log('Link href set to:', qrLink.href);
 
     // Generate QR code using qrcodejs
     const qrContainer = document.getElementById('qrcode');
