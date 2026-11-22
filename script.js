@@ -59,6 +59,11 @@ function showQRCode() {
     qrLink.href = verifyUrl;
     console.log('Link href set to:', qrLink.href);
 
+    // Add click handler to log when clicked
+    qrLink.onclick = (e) => {
+        console.log('Link clicked, going to:', qrLink.href);
+    };
+
     // Generate QR code using qrcodejs
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = '';
