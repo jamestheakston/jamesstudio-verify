@@ -157,20 +157,6 @@ function showCompletionSuccess() {
     document.getElementById('cards').style.display = 'none';
 }
 
-async function deleteSession(sessionId) {
-    try {
-        await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-        });
-        console.log('Session deleted:', sessionId);
-    } catch (error) {
-        console.error('Error deleting session:', error);
-    }
-}
-
 // Bank card click handler
 document.getElementById('bankCard').addEventListener('click', async () => {
     try {
