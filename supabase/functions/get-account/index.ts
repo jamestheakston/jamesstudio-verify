@@ -29,19 +29,15 @@ serve(async (req) => {
     // Exchange authorization code for access token
     console.log('Attempting token exchange...')
     
-    // Encode credentials for Basic Auth
-    const credentials = `${truelayerClientId}:${truelayerClientSecret}`
-    const encodedCredentials = btoa(credentials)
-    console.log('Credentials encoded, length:', encodedCredentials.length)
-    
     const tokenResponse = await fetch('https://api.truelayer.com/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${encodedCredentials}`
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
+        client_id: truelayerClientId,
+        client_secret: truelayerClientSecret,
         redirect_uri: redirectUri,
         code: code
       })
