@@ -143,8 +143,9 @@ function showCompletionSuccess() {
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
     
-    // Show success message
-    alert('Verification completed successfully on your mobile device!');
+    // Show success UI
+    document.getElementById('header').innerHTML = '<h1>Identity Complete</h1><p>Your identity has been verified successfully.</p>';
+    document.getElementById('cards').style.display = 'none';
 }
 
 // Bank card click handler
