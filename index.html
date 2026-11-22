@@ -412,6 +412,79 @@
             font-weight: 600;
         }
 
+        /* Parameters link: only on the method list */
+        .params-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .params-link:hover {
+            text-decoration: underline;
+        }
+
+        .mobile-screen:has(#cards[style*="display: none"]) .params-link {
+            display: none;
+        }
+
+        .param-list {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .param-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            text-align: left;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+        }
+
+        .param-row code {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 2px;
+        }
+
+        .param-row span {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .param-row .btn {
+            flex: none;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        .qr-expired-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 249, 246, 0.95);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            z-index: 10;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
         .consent-links {
             font-size: 12px;
             color: #666;
@@ -809,6 +882,38 @@
             </div>
         </div>
 
+        <a href="#" class="params-link" id="paramsLink">Link parameters</a>
+
+        <!-- Link parameters screen -->
+        <div class="consent" id="params">
+            <div class="consent-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                </svg>
+            </div>
+            <h2>Link parameters</h2>
+            <p class="consent-subtitle">Add these to the page URL</p>
+            <div class="param-list">
+                <div class="param-row">
+                    <div>
+                        <code>?method=bank</code>
+                        <span>Opens the banking app flow</span>
+                    </div>
+                    <button class="btn btn-secondary copy-param" data-query="?method=bank">Copy</button>
+                </div>
+                <div class="param-row">
+                    <div>
+                        <code>?method=human</code>
+                        <span>Opens the human check (desktop only)</span>
+                    </div>
+                    <button class="btn btn-secondary copy-param" data-query="?method=human">Copy</button>
+                </div>
+            </div>
+            <div class="consent-actions">
+                <button class="btn btn-secondary" id="paramsBackBtn">Back</button>
+            </div>
+        </div>
+
         <!-- Bank consent screen -->
         <div class="consent" id="consent">
             <div class="consent-icon">
@@ -893,9 +998,11 @@
                     <div class="loading-spinner"></div>
                     <p>Creating session...</p>
                 </div>
+                <div class="qr-expired-overlay" id="qrExpiredOverlay">Expired</div>
             </div>
             <p class="qr-loading">Waiting for mobile verification...</p>
             <a class="qr-link" id="qrLink" href="#" style="display: block; margin-top: 16px; font-size: 13px; color: #1A1A1A; text-decoration: underline;">Can't scan QR? Click here</a>
+            <button class="retry-btn" id="qrRefreshBtn" style="display: none; margin-top: 16px;">New QR code</button>
             <button class="retry-btn" id="qrBackBtn" style="margin-top: 16px;">Back</button>
         </div>
 
@@ -904,6 +1011,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=5"></script>
 </body>
 </html>
