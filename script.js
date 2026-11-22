@@ -70,7 +70,7 @@ function showQRCode() {
 
 async function initializeSession(sessionId) {
     try {
-        await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
+        const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -78,12 +78,21 @@ async function initializeSession(sessionId) {
             },
             body: JSON.stringify({ status: 'pending' })
         });
+        
+        if (!response.ok) {
+            const error = await response.text();
+            console.error('Session init failed:', response.status, error);
+        } else {
+            console.log('Session initialized successfully');
+        }
     } catch (error) {
         console.error('Error initializing session:', error);
     }
 }
 
 async function pollForCompletion(sessionId) {
+    console.log('Starting to poll for session:', sessionId);
+    
     const pollInterval = setInterval(async () => {
         try {
             const response = await fetch(SESSION_STATUS_URL + `?session=${sessionId}`, {
@@ -93,13 +102,18 @@ async function pollForCompletion(sessionId) {
                 }
             });
 
+            console.log('Poll response status:', response.status);
+
             if (response.ok) {
                 const data = await response.json();
+                console.log('Session status:', data);
                 
                 if (data.status === 'completed') {
                     clearInterval(pollInterval);
                     showCompletionSuccess();
                 }
+            } else {
+                console.error('Poll request failed:', response.status);
             }
         } catch (error) {
             console.error('Error polling session status:', error);
