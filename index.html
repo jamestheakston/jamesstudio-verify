@@ -240,6 +240,81 @@
             font-weight: 600;
         }
 
+        .error {
+            display: none;
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .error-icon {
+            width: 56px;
+            height: 56px;
+            background: #DC2626;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .error-icon svg {
+            width: 28px;
+            height: 28px;
+            color: white;
+        }
+
+        .error h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+
+        .error p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .error-info {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+        }
+
+        .error-info p {
+            font-size: 13px;
+            color: #991B1B;
+            margin-bottom: 8px;
+        }
+
+        .error-info p:last-child {
+            margin-bottom: 0;
+        }
+
+        .retry-btn {
+            background: #1A1A1A;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+
+        .retry-btn:hover {
+            background: #333;
+        }
+
         @media (max-width: 400px) {
             .mobile-screen {
                 padding: 32px 24px;
@@ -297,6 +372,21 @@
             <div class="account-details" id="accountDetails">
                 <!-- Account details will be inserted here -->
             </div>
+        </div>
+
+        <div class="error" id="error">
+            <div class="error-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+            <h2 id="errorTitle">Verification Failed</h2>
+            <p id="errorMessage">Something went wrong. Please try again.</p>
+            <div class="error-info" id="errorInfo">
+                <p><strong>What happened:</strong> You denied access to your bank account.</p>
+                <p><strong>What to do:</strong> Click "Try Again" to restart the verification process, or contact support if you continue to experience issues.</p>
+            </div>
+            <button class="retry-btn" id="retryBtn">Try Again</button>
         </div>
     </div>
 

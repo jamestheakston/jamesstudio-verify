@@ -126,16 +126,40 @@ function handleOAuthError(error) {
 
     // Reset to initial state
     document.getElementById('loading').classList.remove('active');
-    document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
 
-    // Show appropriate error message
+    // Show error state
+    document.getElementById('error').classList.add('active');
+
+    // Set error messages
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorInfo = document.getElementById('errorInfo');
+
     if (error === 'access_denied') {
-        alert('Verification cancelled. You denied access to your bank account.');
+        errorTitle.textContent = 'Verification Cancelled';
+        errorMessage.textContent = 'You denied access to your bank account.';
+        errorInfo.innerHTML = `
+            <p><strong>What happened:</strong> You chose not to share your bank account information.</p>
+            <p><strong>What to do:</strong> If you want to verify your identity, click "Try Again" to restart the process. You'll need to grant access to proceed.</p>
+        `;
     } else {
-        alert('Verification failed: ' + error);
+        errorTitle.textContent = 'Verification Failed';
+        errorMessage.textContent = 'Something went wrong during the verification process.';
+        errorInfo.innerHTML = `
+            <p><strong>Error:</strong> ${error}</p>
+            <p><strong>What to do:</strong> Click "Try Again" to restart the verification process. If the problem persists, please contact support.</p>
+        `;
     }
 
     // Clean URL
     window.history.replaceState({}, document.title, window.location.pathname);
 }
+
+// Retry button handler
+document.getElementById('retryBtn').addEventListener('click', () => {
+    document.getElementById('error').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+});
