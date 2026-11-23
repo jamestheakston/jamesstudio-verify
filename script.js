@@ -2,6 +2,8 @@
 const CREATE_SESSION_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/create-session';
 const GET_ACCOUNT_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/get-account';
 const SESSION_STATUS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/session-status';
+const SEND_SMS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/send-sms';
+const VERIFY_SMS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/verify-sms';
 const SUPABASE_ANON_KEY = 'sb_publishable_Raqakv5Z4U8Wr7zmzIvLDA_TsnBSFyS';
 
 // Get the current page URL for redirect
@@ -489,6 +491,158 @@ document.getElementById('qrBackBtn').addEventListener('click', () => {
     document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
     document.getElementById('cards').style.display = 'flex';
+});
+
+// ---- SMS verification ----
+const smsCard = document.getElementById('smsCard');
+smsCard.addEventListener('click', () => {
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('sms').classList.add('active');
+    document.getElementById('smsPhoneStep').style.display = 'block';
+    document.getElementById('smsCodeStep').style.display = 'none';
+    document.getElementById('smsPhoneInput').value = '';
+    document.getElementById('smsCodeInput').value = '';
+    document.getElementById('smsError').style.display = 'none';
+});
+
+document.getElementById('smsCancelBtn').addEventListener('click', () => {
+    document.getElementById('sms').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'flex';
+});
+
+document.getElementById('smsSendBtn').addEventListener('click', async () => {
+    const phoneNumber = document.getElementById('smsPhoneInput').value.trim();
+    if (!phoneNumber) {
+        document.getElementById('smsError').textContent = 'Please enter a phone number';
+        document.getElementById('smsError').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('smsSendBtn').textContent = 'Sending...';
+    document.getElementById('smsSendBtn').disabled = true;
+
+    try {
+        const response = await fetch(SEND_SMS_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ phoneNumber })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('smsPhoneStep').style.display = 'none';
+            document.getElementById('smsCodeStep').style.display = 'block';
+            document.getElementById('smsPhoneDisplay').textContent = phoneNumber;
+            document.getElementById('smsCodeInput').focus();
+
+            // Show resend button after 30 seconds
+            setTimeout(() => {
+                document.getElementById('smsResendBtn').style.display = 'inline-block';
+            }, 30000);
+        } else {
+            document.getElementById('smsError').textContent = data.error || 'Failed to send SMS';
+            document.getElementById('smsError').style.display = 'block';
+        }
+    } catch (err) {
+        document.getElementById('smsError').textContent = 'Failed to send SMS. Please try again.';
+        document.getElementById('smsError').style.display = 'block';
+    } finally {
+        document.getElementById('smsSendBtn').textContent = 'Send Code';
+        document.getElementById('smsSendBtn').disabled = false;
+    }
+});
+
+document.getElementById('smsVerifyBtn').addEventListener('click', async () => {
+    const code = document.getElementById('smsCodeInput').value.trim();
+    const phoneNumber = document.getElementById('smsPhoneDisplay').textContent;
+
+    if (!code || code.length !== 6) {
+        document.getElementById('smsError').textContent = 'Please enter a 6-digit code';
+        document.getElementById('smsError').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('smsVerifyBtn').textContent = 'Verifying...';
+    document.getElementById('smsVerifyBtn').disabled = true;
+
+    try {
+        const response = await fetch(VERIFY_SMS_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ phoneNumber, code })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('sms').classList.remove('active');
+            showCompletionSuccess();
+            document.getElementById('smsSuccessTick').style.display = 'flex';
+        } else {
+            document.getElementById('smsError').textContent = data.error || 'Invalid code';
+            document.getElementById('smsError').style.display = 'block';
+
+            if (data.remainingAttempts !== undefined) {
+                document.getElementById('smsError').textContent += ` (${data.remainingAttempts} attempts remaining)`;
+            }
+        }
+    } catch (err) {
+        document.getElementById('smsError').textContent = 'Failed to verify. Please try again.';
+        document.getElementById('smsError').style.display = 'block';
+    } finally {
+        document.getElementById('smsVerifyBtn').textContent = 'Verify';
+        document.getElementById('smsVerifyBtn').disabled = false;
+    }
+});
+
+document.getElementById('smsResendBtn').addEventListener('click', async () => {
+    const phoneNumber = document.getElementById('smsPhoneDisplay').textContent;
+
+    document.getElementById('smsResendBtn').textContent = 'Sending...';
+    document.getElementById('smsResendBtn').disabled = true;
+
+    try {
+        const response = await fetch(SEND_SMS_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ phoneNumber })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('smsError').style.display = 'none';
+            document.getElementById('smsCodeInput').value = '';
+            document.getElementById('smsCodeInput').focus();
+
+            // Reset resend timer
+            document.getElementById('smsResendBtn').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('smsResendBtn').style.display = 'inline-block';
+            }, 30000);
+        } else {
+            document.getElementById('smsError').textContent = data.error || 'Failed to resend SMS';
+            document.getElementById('smsError').style.display = 'block';
+        }
+    } catch (err) {
+        document.getElementById('smsError').textContent = 'Failed to resend SMS. Please try again.';
+        document.getElementById('smsError').style.display = 'block';
+    } finally {
+        document.getElementById('smsResendBtn').textContent = 'Resend';
+        document.getElementById('smsResendBtn').disabled = false;
+    }
 });
 
 // ?method=bank or ?method=human skips the method list
