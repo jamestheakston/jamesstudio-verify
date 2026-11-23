@@ -7,10 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Twilio credentials
-const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
-const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
-const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
+// ClickSend credentials
+const CLICKSEND_USERNAME = Deno.env.get('CLICKSEND_USERNAME')
+const CLICKSEND_API_KEY = Deno.env.get('CLICKSEND_API_KEY')
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -68,37 +67,41 @@ serve(async (req) => {
       )
     }
 
-    // Send SMS via Twilio
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
-    const credentials = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)
+    // Send SMS via ClickSend
+    const clicksendUrl = 'https://rest.clicksend.com/v3/sms/send'
+    const credentials = btoa(`${CLICKSEND_USERNAME}:${CLICKSEND_API_KEY}`)
 
-    const twilioResponse = await fetch(twilioUrl, {
+    const clicksendResponse = await fetch(clicksendUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        From: TWILIO_PHONE_NUMBER,
-        To: normalizedPhone,
-        Body: `Your James Studio verification code is: ${code}. Valid for 5 minutes.`
+      body: JSON.stringify({
+        messages: [
+          {
+            body: `Your James Studio verification code is: ${code}. Valid for 5 minutes.`,
+            to: normalizedPhone,
+            source: 'James Studio'
+          }
+        ]
       })
     })
 
-    if (!twilioResponse.ok) {
-      const errorText = await twilioResponse.text()
-      console.error('Twilio error:', errorText)
+    if (!clicksendResponse.ok) {
+      const errorText = await clicksendResponse.text()
+      console.error('ClickSend error:', errorText)
       return new Response(
         JSON.stringify({ error: 'Failed to send SMS', details: errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const twilioData = await twilioResponse.json()
-    console.log('SMS sent successfully:', twilioData.sid)
+    const clicksendData = await clicksendResponse.json()
+    console.log('SMS sent successfully:', clicksendData.response_code)
 
     return new Response(
-      JSON.stringify({ success: true, messageSid: twilioData.sid }),
+      JSON.stringify({ success: true, messageId: clicksendData.data?.messages?.[0]?.message_id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
