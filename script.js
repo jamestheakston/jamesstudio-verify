@@ -512,13 +512,36 @@ document.getElementById('smsCancelBtn').addEventListener('click', () => {
     document.getElementById('cards').style.display = 'flex';
 });
 
-document.getElementById('smsSendBtn').addEventListener('click', async () => {
+document.getElementById('smsSendBtn').addEventListener('click', () => {
     const phoneNumber = document.getElementById('smsPhoneInput').value.trim();
     if (!phoneNumber) {
         document.getElementById('smsError').textContent = 'Please enter a phone number';
         document.getElementById('smsError').style.display = 'block';
         return;
     }
+
+    // Show bottom modal
+    document.getElementById('bottomModalOverlay').classList.add('active');
+    document.getElementById('bottomModal').classList.add('active');
+});
+
+// Bottom modal handlers
+document.getElementById('bottomModalCancel').addEventListener('click', () => {
+    document.getElementById('bottomModalOverlay').classList.remove('active');
+    document.getElementById('bottomModal').classList.remove('active');
+});
+
+document.getElementById('bottomModalOverlay').addEventListener('click', () => {
+    document.getElementById('bottomModalOverlay').classList.remove('active');
+    document.getElementById('bottomModal').classList.remove('active');
+});
+
+document.getElementById('bottomModalContinue').addEventListener('click', async () => {
+    // Hide modal
+    document.getElementById('bottomModalOverlay').classList.remove('active');
+    document.getElementById('bottomModal').classList.remove('active');
+
+    const phoneNumber = document.getElementById('smsPhoneInput').value.trim();
 
     document.getElementById('smsSendBtn').textContent = 'Sending...';
     document.getElementById('smsSendBtn').disabled = true;

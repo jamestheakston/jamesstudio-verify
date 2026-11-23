@@ -828,6 +828,70 @@
                 font-size: 22px;
             }
         }
+
+        /* Bottom modal */
+        .bottom-modal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #FAF9F6;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .bottom-modal.active {
+            transform: translateY(0);
+        }
+
+        .bottom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+            z-index: 999;
+        }
+
+        .bottom-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bottom-modal h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+        }
+
+        .bottom-modal p {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .bottom-modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .bottom-modal-actions .btn {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -1054,6 +1118,19 @@
         </div>
     </div>
 
-    <script src="script.js?v=5"></script>
+    <!-- Bottom modal overlay -->
+    <div class="bottom-modal-overlay" id="bottomModalOverlay"></div>
+
+    <!-- Bottom modal -->
+    <div class="bottom-modal" id="bottomModal">
+        <h3>Notice</h3>
+        <p>By continuing, you agree to ClickSend's <a href="https://www.clicksend.com/terms-conditions" target="_blank" rel="noopener noreferrer" style="color: #1A1A1A; text-decoration: underline;">Terms & Conditions</a> and <a href="https://www.clicksend.com/privacy-policy" target="_blank" rel="noopener noreferrer" style="color: #1A1A1A; text-decoration: underline;">Privacy Policy</a>.</p>
+        <div class="bottom-modal-actions">
+            <button class="btn btn-secondary" id="bottomModalCancel">Cancel</button>
+            <button class="btn btn-primary" id="bottomModalContinue">Continue</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=6"></script>
 </body>
 </html>
