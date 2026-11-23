@@ -506,6 +506,12 @@ smsCard.addEventListener('click', () => {
     document.getElementById('smsError').style.display = 'none';
 });
 
+// Auto-format phone number input
+document.getElementById('smsPhoneInput').addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    e.target.value = value; // Keep only digits
+});
+
 document.getElementById('smsCancelBtn').addEventListener('click', () => {
     document.getElementById('sms').classList.remove('active');
     document.getElementById('header').style.display = 'block';
@@ -514,8 +520,13 @@ document.getElementById('smsCancelBtn').addEventListener('click', () => {
 
 document.getElementById('smsSendBtn').addEventListener('click', () => {
     const phoneNumber = document.getElementById('smsPhoneInput').value.trim();
-    if (!phoneNumber) {
-        document.getElementById('smsError').textContent = 'Please enter a phone number';
+
+    // Remove all non-digit characters
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+
+    // Validate: must be 11 digits and start with 7
+    if (!digitsOnly || digitsOnly.length !== 11 || !digitsOnly.startsWith('7')) {
+        document.getElementById('smsError').textContent = 'Please enter a valid UK mobile number (e.g., 7123 456789)';
         document.getElementById('smsError').style.display = 'block';
         return;
     }
@@ -541,7 +552,8 @@ document.getElementById('bottomModalContinue').addEventListener('click', async (
     document.getElementById('bottomModalOverlay').classList.remove('active');
     document.getElementById('bottomModal').classList.remove('active');
 
-    const phoneNumber = document.getElementById('smsPhoneInput').value.trim();
+    const phoneInput = document.getElementById('smsPhoneInput').value.trim();
+    const phoneNumber = '+44' + phoneInput.replace(/\D/g, '');
 
     document.getElementById('smsSendBtn').textContent = 'Sending...';
     document.getElementById('smsSendBtn').disabled = true;
@@ -561,7 +573,7 @@ document.getElementById('bottomModalContinue').addEventListener('click', async (
         if (data.success) {
             document.getElementById('smsPhoneStep').style.display = 'none';
             document.getElementById('smsCodeStep').style.display = 'block';
-            document.getElementById('smsPhoneDisplay').textContent = phoneNumber;
+            document.getElementById('smsPhoneDisplay').textContent = '+44 ' + document.getElementById('smsPhoneInput').value.replace(/\D/g, '');
             document.getElementById('smsCodeInput').focus();
 
             // Show resend button after 30 seconds

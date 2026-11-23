@@ -1098,7 +1098,10 @@
             <h2>SMS Verification</h2>
             <p class="consent-subtitle">Enter your phone number</p>
             <div id="smsPhoneStep">
-                <input type="tel" id="smsPhoneInput" class="sms-input" placeholder="+44 7123 456789" style="width: 100%; padding: 14px; border: 1px solid #E5E5E5; border-radius: 12px; font-size: 16px; font-family: 'Space Grotesk', sans-serif; margin-bottom: 16px; outline: none;">
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" value="+44" readonly style="flex: none; width: 60px; padding: 14px; border: 1px solid #E5E5E5; border-radius: 12px; font-size: 16px; font-family: 'Space Grotesk', sans-serif; background: #FAF9F6; color: #666; text-align: center; outline: none;">
+                    <input type="tel" id="smsPhoneInput" class="sms-input" placeholder="7123 456789" maxlength="11" style="flex: 1; padding: 14px; border: 1px solid #E5E5E5; border-radius: 12px; font-size: 16px; font-family: 'Space Grotesk', sans-serif; outline: none;">
+                </div>
                 <p style="font-size: 12px; color: #666; margin-bottom: 16px;">We'll send you a 6-digit code. Standard message rates may apply.</p>
                 <div class="consent-actions">
                     <button class="btn btn-secondary" id="smsCancelBtn">Cancel</button>
@@ -1134,6 +1137,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>
