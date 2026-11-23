@@ -524,8 +524,8 @@ document.getElementById('smsSendBtn').addEventListener('click', () => {
     // Remove all non-digit characters
     const digitsOnly = phoneNumber.replace(/\D/g, '');
 
-    // Validate: must be 11 digits and start with 7
-    if (!digitsOnly || digitsOnly.length !== 11 || !digitsOnly.startsWith('7')) {
+    // Validate: must be 10 digits and start with 7 (UK mobile: +44 7XXX XXXXXX)
+    if (!digitsOnly || digitsOnly.length !== 10 || !digitsOnly.startsWith('7')) {
         document.getElementById('smsError').textContent = 'Please enter a valid UK mobile number (e.g., 7123 456789)';
         document.getElementById('smsError').style.display = 'block';
         return;
