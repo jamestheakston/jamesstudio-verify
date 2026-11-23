@@ -188,7 +188,7 @@ function resetQRExpiry() {
 function showCompletionSuccess() {
     document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('cards').style.display = 'grid';
     
     // Show success tick on phone card
     document.getElementById('phoneSuccessTick').style.display = 'flex';
@@ -222,7 +222,7 @@ function showConsent() {
 function hideConsent() {
     document.getElementById('consent').classList.remove('active');
     document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('cards').style.display = 'grid';
 }
 
 // Consent: Cancel goes back to the method list
@@ -270,7 +270,7 @@ async function startBankVerification() {
         // Reset to initial state
         document.getElementById('loading').classList.remove('active');
         document.getElementById('header').style.display = 'block';
-        document.getElementById('cards').style.display = 'flex';
+        document.getElementById('cards').style.display = 'grid';
     }
 }
 
@@ -332,7 +332,7 @@ async function handleOAuthCallback(code) {
         // Reset to initial state
         document.getElementById('loading').classList.remove('active');
         document.getElementById('header').style.display = 'block';
-        document.getElementById('cards').style.display = 'flex';
+        document.getElementById('cards').style.display = 'grid';
     }
 }
 
@@ -452,7 +452,7 @@ function handleOAuthError(error) {
 document.getElementById('retryBtn').addEventListener('click', () => {
     document.getElementById('error').classList.remove('active');
     document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('cards').style.display = 'grid';
 });
 
 // New QR code after expiry
@@ -469,7 +469,7 @@ document.getElementById('paramsLink').addEventListener('click', (e) => {
 document.getElementById('paramsBackBtn').addEventListener('click', () => {
     document.getElementById('params').classList.remove('active');
     document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('cards').style.display = 'grid';
 });
 
 document.querySelectorAll('.copy-param').forEach((btn) => {
@@ -490,7 +490,7 @@ document.getElementById('qrBackBtn').addEventListener('click', () => {
     stopPolling();
     document.getElementById('qr').classList.remove('active');
     document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('cards').style.display = 'grid';
 });
 
 // ---- SMS verification ----
@@ -509,7 +509,7 @@ smsCard.addEventListener('click', () => {
 document.getElementById('smsCancelBtn').addEventListener('click', () => {
     document.getElementById('sms').classList.remove('active');
     document.getElementById('header').style.display = 'block';
-    document.getElementById('cards').style.display = 'flex';
+    document.getElementById('cards').style.display = 'grid';
 });
 
 document.getElementById('smsSendBtn').addEventListener('click', () => {
