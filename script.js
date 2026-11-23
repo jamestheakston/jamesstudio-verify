@@ -494,8 +494,7 @@ document.getElementById('qrBackBtn').addEventListener('click', () => {
 });
 
 // ---- SMS verification ----
-const smsCard = document.getElementById('smsCard');
-smsCard.addEventListener('click', () => {
+function showSMSVerification() {
     document.getElementById('header').style.display = 'none';
     document.getElementById('cards').style.display = 'none';
     document.getElementById('sms').classList.add('active');
@@ -504,7 +503,10 @@ smsCard.addEventListener('click', () => {
     document.getElementById('smsPhoneInput').value = '';
     document.getElementById('smsCodeInput').value = '';
     document.getElementById('smsError').style.display = 'none';
-});
+}
+
+const smsCard = document.getElementById('smsCard');
+smsCard.addEventListener('click', showSMSVerification);
 
 // Auto-format phone number input
 document.getElementById('smsPhoneInput').addEventListener('input', (e) => {
@@ -680,7 +682,7 @@ document.getElementById('smsResendBtn').addEventListener('click', async () => {
     }
 });
 
-// ?method=bank or ?method=human skips the method list
+// ?method=bank, ?method=human, or ?method=sms skips the method list
 (function () {
     if (error || authCode) return;
     const method = (urlParams.get("method") || "").toLowerCase();
@@ -688,5 +690,7 @@ document.getElementById('smsResendBtn').addEventListener('click', async () => {
         showConsent();
     } else if (method === "human" && !isMobile) {
         showQRCode();
+    } else if (method === "sms") {
+        showSMSVerification();
     }
 })();
