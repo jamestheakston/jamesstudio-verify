@@ -69,9 +69,14 @@ serve(async (req) => {
         )
       }
 
-      // Call Studid API to check verification
+      // Call Studid API to check verification with Bearer token header
       const studidResponse = await fetch(
-        `https://api.studid.io/v2/auth/verification/${id}?id=${id}&secretToken=${secretToken}`
+        `https://api.studid.io/v2/auth/verification/${id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${secretToken}`
+          }
+        }
       )
 
       if (!studidResponse.ok) {
@@ -85,6 +90,15 @@ serve(async (req) => {
 
       const studidData = await studidResponse.json()
       console.log('Studid verification result:', studidData)
+
+      // Reject test sessions in production
+      if (studidData.session && studidData.session.test === true) {
+        console.error('Test session detected, rejecting')
+        return new Response(
+          JSON.stringify({ error: 'Test session detected - not valid for production' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
       return new Response(
         JSON.stringify({
