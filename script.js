@@ -503,6 +503,7 @@ function showSMSVerification() {
     document.getElementById('smsPhoneInput').value = '';
     document.getElementById('smsCodeInput').value = '';
     document.getElementById('smsError').style.display = 'none';
+    document.getElementById('smsPhoneError').style.display = 'none';
 }
 
 const smsCard = document.getElementById('smsCard');
@@ -512,6 +513,8 @@ smsCard.addEventListener('click', showSMSVerification);
 document.getElementById('smsPhoneInput').addEventListener('input', (e) => {
     let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
     e.target.value = value; // Keep only digits
+    // Clear error when user starts typing
+    document.getElementById('smsPhoneError').style.display = 'none';
 });
 
 document.getElementById('smsCancelBtn').addEventListener('click', () => {
@@ -528,10 +531,13 @@ document.getElementById('smsSendBtn').addEventListener('click', () => {
 
     // Validate: must be 10 digits and start with 7 (UK mobile: +44 7XXX XXXXXX)
     if (!digitsOnly || digitsOnly.length !== 10 || !digitsOnly.startsWith('7')) {
-        document.getElementById('smsError').textContent = 'Please enter a valid UK mobile number (e.g., 7123 456789)';
-        document.getElementById('smsError').style.display = 'block';
+        document.getElementById('smsPhoneError').textContent = 'Please enter a valid UK mobile number (e.g., 7123 456789)';
+        document.getElementById('smsPhoneError').style.display = 'block';
         return;
     }
+
+    // Clear any previous error
+    document.getElementById('smsPhoneError').style.display = 'none';
 
     // Show bottom modal
     document.getElementById('bottomModalOverlay').classList.add('active');
