@@ -223,7 +223,10 @@
         document.getElementById('consentBtn').addEventListener('click', () => {
             // Redirect back with consent granted
             const redirectUrl = urlParams.get('redirect') || window.location.origin + '/';
-            window.location.href = redirectUrl + '?consent=granted&method=' + method;
+            const url = new URL(redirectUrl);
+            url.searchParams.set('consent', 'granted');
+            url.searchParams.set('method', method);
+            window.location.href = url.toString();
         });
 
         // Handle deny - redirect to noauthredirect URL
