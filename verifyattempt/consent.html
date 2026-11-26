@@ -179,11 +179,11 @@
         // Get verification parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
         const serviceName = urlParams.get('servicename') || 'James Studio Verify';
-        const type = urlParams.get('type') || 'all';
+        const method = urlParams.get('method') || 'all';
         const noauthredirect = urlParams.get('noauthredirect') || '/';
 
-        // Type configurations
-        const types = {
+        // Method configurations
+        const methods = {
             all: {
                 title: 'Identity Verification',
                 description: 'Verify your identity using multiple methods'
@@ -216,14 +216,14 @@
 
         // Update page content
         document.getElementById('title').textContent = serviceName;
-        document.getElementById('methodTitle').textContent = types[type]?.title || 'Verification';
-        document.getElementById('methodDescription').textContent = types[type]?.description || 'Verification method';
+        document.getElementById('methodTitle').textContent = methods[method]?.title || 'Verification';
+        document.getElementById('methodDescription').textContent = methods[method]?.description || 'Verification method';
 
         // Handle consent
         document.getElementById('consentBtn').addEventListener('click', () => {
             // Redirect back with consent granted
             const redirectUrl = urlParams.get('redirect') || window.location.origin + '/';
-            window.location.href = redirectUrl + '?consent=granted&type=' + type;
+            window.location.href = redirectUrl + '?consent=granted&method=' + method;
         });
 
         // Handle deny - redirect to noauthredirect URL
