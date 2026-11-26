@@ -16,7 +16,7 @@
 
         body {
             font-family: 'Space Grotesk', sans-serif;
-            background: #FAF9F6;
+            background-color: #FAF9F6;
             color: #1A1A1A;
             min-height: 100vh;
             display: flex;
@@ -25,41 +25,53 @@
             padding: 20px;
         }
 
+        h1, h2, h3 {
+            font-family: 'Syne', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
         .container {
-            max-width: 400px;
-            width: 100%;
             background: white;
-            border-radius: 20px;
+            width: 100%;
+            max-width: 360px;
             padding: 32px 24px;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         }
 
         .logo {
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-family: 'Syne', sans-serif;
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.05em;
             color: #1A1A1A;
             margin-bottom: 32px;
             text-decoration: none;
+            justify-content: center;
         }
 
         .logo-pill {
             background: #1A1A1A;
             color: #FAF9F6;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 18px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 3px 8px;
+            border-radius: 9999px;
         }
 
         h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: 700;
             color: #1A1A1A;
-            margin-bottom: 12px;
             line-height: 1.2;
+            margin-bottom: 8px;
         }
 
         p {
@@ -78,11 +90,10 @@
         }
 
         .verification-method h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: #1A1A1A;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .verification-method p {
@@ -165,24 +176,37 @@
     </div>
 
     <script>
-        // Get verification method from URL parameters
+        // Get verification parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const method = urlParams.get('method') || 'unknown';
-        const serviceName = urlParams.get('service') || 'James Studio Verify';
+        const serviceName = urlParams.get('servicename') || 'James Studio Verify';
+        const type = urlParams.get('type') || 'all';
+        const noauthredirect = urlParams.get('noauthredirect') || '/';
 
-        // Method configurations
-        const methods = {
+        // Type configurations
+        const types = {
+            all: {
+                title: 'Identity Verification',
+                description: 'Verify your identity using multiple methods'
+            },
+            phone: {
+                title: 'Phone Verification',
+                description: 'Verify using your phone number'
+            },
+            student: {
+                title: 'Student Verification',
+                description: 'Verify using your university login'
+            },
+            id: {
+                title: 'ID Verification',
+                description: 'Verify using your government ID'
+            },
             bank: {
                 title: 'Bank Verification',
-                description: 'Verify using your bank account through TrueLayer'
+                description: 'Verify using your bank account'
             },
             sms: {
                 title: 'SMS Verification',
                 description: 'Verify using a text message code'
-            },
-            student: {
-                title: 'Student Verification',
-                description: 'Verify using your university login through Studid'
             },
             human: {
                 title: 'Human Verification',
@@ -192,21 +216,19 @@
 
         // Update page content
         document.getElementById('title').textContent = serviceName;
-        document.getElementById('methodTitle').textContent = methods[method]?.title || 'Verification';
-        document.getElementById('methodDescription').textContent = methods[method]?.description || 'Verification method';
+        document.getElementById('methodTitle').textContent = types[type]?.title || 'Verification';
+        document.getElementById('methodDescription').textContent = types[type]?.description || 'Verification method';
 
         // Handle consent
         document.getElementById('consentBtn').addEventListener('click', () => {
             // Redirect back with consent granted
-            const redirectUrl = urlParams.get('redirect') || '/';
-            window.location.href = redirectUrl + '?consent=granted&method=' + method;
+            const redirectUrl = urlParams.get('redirect') || window.location.origin + '/';
+            window.location.href = redirectUrl + '?consent=granted&type=' + type;
         });
 
-        // Handle deny
+        // Handle deny - redirect to noauthredirect URL
         document.getElementById('denyBtn').addEventListener('click', () => {
-            // Redirect back with consent denied
-            const redirectUrl = urlParams.get('redirect') || '/';
-            window.location.href = redirectUrl + '?consent=denied&method=' + method;
+            window.location.href = noauthredirect;
         });
     </script>
 </body>
