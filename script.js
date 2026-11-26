@@ -4,15 +4,17 @@ const GET_ACCOUNT_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/g
 const SESSION_STATUS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/session-status';
 const SEND_SMS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/send-sms';
 const VERIFY_SMS_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/verify-sms';
+const STUDENT_VERIFY_URL = 'https://pkqkqijmohbvfxxnzhyy.supabase.co/functions/v1/student-verify';
 const SUPABASE_ANON_KEY = 'sb_publishable_Raqakv5Z4U8Wr7zmzIvLDA_TsnBSFyS';
 
 // Get the current page URL for redirect
 const redirectUri = window.location.origin + window.location.pathname;
 
-// Check if we're returning from TrueLayer OAuth
+// Check if we're returning from TrueLayer OAuth or Studid
 const urlParams = new URLSearchParams(window.location.search);
 const authCode = urlParams.get('code');
 const error = urlParams.get('error');
+const verificationId = urlParams.get('verificationId');
 
 if (error) {
     // Handle OAuth error
@@ -20,6 +22,9 @@ if (error) {
 } else if (authCode) {
     // Handle OAuth callback
     handleOAuthCallback(authCode);
+} else if (verificationId) {
+    // Handle Studid callback
+    handleStudidCallback(verificationId);
 }
 
 // Check if user is on mobile
@@ -688,9 +693,111 @@ document.getElementById('smsResendBtn').addEventListener('click', async () => {
     }
 });
 
-// ?method=bank, ?method=human, or ?method=sms skips the method list
+// ---- Student verification ----
+const studentCard = document.getElementById('studentCard');
+studentCard.addEventListener('click', () => {
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('student').classList.add('active');
+});
+
+document.getElementById('studentCancelBtn').addEventListener('click', () => {
+    document.getElementById('student').classList.remove('active');
+    document.getElementById('header').style.display = 'block';
+    document.getElementById('cards').style.display = 'grid';
+});
+
+document.getElementById('studentContinueBtn').addEventListener('click', async () => {
+    document.getElementById('studentContinueBtn').textContent = 'Creating...';
+    document.getElementById('studentContinueBtn').disabled = true;
+
+    try {
+        const response = await fetch(`${STUDENT_VERIFY_URL}?action=create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+                redirectUrl: window.location.origin + window.location.pathname
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Store the secret token in sessionStorage for callback
+            sessionStorage.setItem('studidSecretToken', data.secretToken);
+            sessionStorage.setItem('studidId', data.id);
+
+            // Redirect to Studid
+            window.location.href = data.link;
+        } else {
+            alert('Failed to create verification: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        alert('Failed to create verification. Please try again.');
+    } finally {
+        document.getElementById('studentContinueBtn').textContent = 'Continue';
+        document.getElementById('studentContinueBtn').disabled = false;
+    }
+});
+
+// Handle Studid callback
+async function handleStudidCallback(verificationId) {
+    const secretToken = sessionStorage.getItem('studidSecretToken');
+    const storedId = sessionStorage.getItem('studidId');
+
+    if (!secretToken || !storedId || storedId !== verificationId) {
+        alert('Invalid verification session. Please try again.');
+        sessionStorage.removeItem('studidSecretToken');
+        sessionStorage.removeItem('studidId');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${STUDENT_VERIFY_URL}?action=check`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+                id: verificationId,
+                secretToken: secretToken
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data.session) {
+            // Success - student verified
+            const session = data.data.session;
+            console.log('Student verified:', session);
+
+            // Clear sessionStorage
+            sessionStorage.removeItem('studidSecretToken');
+            sessionStorage.removeItem('studidId');
+
+            // Show success
+            document.getElementById('header').style.display = 'none';
+            document.getElementById('cards').style.display = 'none';
+            showCompletionSuccess();
+            document.getElementById('studentSuccessTick').style.display = 'flex';
+
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            alert('Verification failed or not completed yet. Please try again.');
+        }
+    } catch (err) {
+        alert('Failed to verify student status. Please try again.');
+    }
+}
+
+// ?method=bank, ?method=human, ?method=sms, or ?method=student skips the method list
 (function () {
-    if (error || authCode) return;
+    if (error || authCode || verificationId) return;
     const method = (urlParams.get("method") || "").toLowerCase();
     if (method === "bank") {
         showConsent();
@@ -698,5 +805,9 @@ document.getElementById('smsResendBtn').addEventListener('click', async () => {
         showQRCode();
     } else if (method === "sms") {
         showSMSVerification();
+    } else if (method === "student") {
+        document.getElementById('header').style.display = 'none';
+        document.getElementById('cards').style.display = 'none';
+        document.getElementById('student').classList.add('active');
     }
 })();

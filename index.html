@@ -952,6 +952,23 @@
                 <p>Verify with a text message code</p>
             </div>
 
+            <div class="card" id="studentCard">
+                <div class="success-tick" id="studentSuccessTick" style="display: none;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <div class="card-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                    </svg>
+                </div>
+                <h3>Student verification</h3>
+                <p>Verify with your university login</p>
+            </div>
+
             <div class="card disabled">
                 <span class="coming-soon-badge">Soon</span>
                 <div class="card-icon">
@@ -996,6 +1013,13 @@
                         <span>Opens SMS verification</span>
                     </div>
                     <button class="btn btn-secondary copy-param" data-query="?method=sms">Copy</button>
+                </div>
+                <div class="param-row">
+                    <div>
+                        <code>?method=student</code>
+                        <span>Opens student verification</span>
+                    </div>
+                    <button class="btn btn-secondary copy-param" data-query="?method=student">Copy</button>
                 </div>
             </div>
             <div class="consent-actions">
@@ -1127,6 +1151,39 @@
             </div>
         </div>
 
+        <!-- Student verification screen -->
+        <div class="consent" id="student">
+            <div class="consent-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                </svg>
+            </div>
+            <h2>Student Verification</h2>
+            <p class="consent-subtitle">Verify with your university login</p>
+            <div class="consent-description">
+                <p>You'll be redirected to Studid to select your university and log in with your institutional credentials. This verifies you're a current student or researcher without requiring document uploads.</p>
+                <p>Thousands of universities across 70+ countries are supported including UK, US, Germany, France, and more.</p>
+            </div>
+            <p class="consent-steps-title">What happens next</p>
+            <ol class="consent-steps">
+                <li>Select your university from the list</li>
+                <li>Log in with your university credentials</li>
+                <li>Come back here to finish verification</li>
+            </ol>
+            <p class="consent-links">
+                By continuing, you agree to Studid's
+                <a href="https://studid.io/terms" target="_blank" rel="noopener noreferrer">Terms</a>
+                and
+                <a href="https://studid.io/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+            </p>
+            <div class="consent-actions">
+                <button class="btn btn-secondary" id="studentCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="studentContinueBtn">Continue</button>
+            </div>
+        </div>
+
         <div style="text-align: center; margin-top: 32px;">
             <a href="privacy.html" style="font-size: 12px; color: #666; text-decoration: none;">Privacy Policy</a>
         </div>
@@ -1145,6 +1202,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=12"></script>
+    <script src="script.js?v=13"></script>
 </body>
 </html>
