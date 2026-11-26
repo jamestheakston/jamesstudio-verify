@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consent - James Studio Verify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #FAF9F6;
+            color: #1A1A1A;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 32px 24px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            display: block;
+            text-align: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 32px;
+            text-decoration: none;
+        }
+
+        .logo-pill {
+            background: #1A1A1A;
+            color: #FAF9F6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .verification-method {
+            background: #FAF9F6;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .verification-method h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+
+        .verification-method p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #1A1A1A;
+            color: #FAF9F6;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1A1A1A;
+            border: 1px solid #E5E5E5;
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #FAF9F6;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .footer a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="logo" href="/">
+            JAMES<span class="logo-pill">Studio</span>
+        </a>
+
+        <h1 id="title">James Studio Verify</h1>
+        <p id="description">wants to verify your identity</p>
+
+        <div class="verification-method">
+            <h2 id="methodTitle">Verification Method</h2>
+            <p id="methodDescription">Method description here</p>
+        </div>
+
+        <button class="btn btn-primary" id="consentBtn">Allow</button>
+        <button class="btn btn-secondary" id="denyBtn">Deny</button>
+
+        <div class="footer">
+            <a href="/privacy.html">Privacy Policy</a>
+        </div>
+    </div>
+
+    <script>
+        // Get verification method from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const method = urlParams.get('method') || 'unknown';
+        const serviceName = urlParams.get('service') || 'James Studio Verify';
+
+        // Method configurations
+        const methods = {
+            bank: {
+                title: 'Bank Verification',
+                description: 'Verify using your bank account through TrueLayer'
+            },
+            sms: {
+                title: 'SMS Verification',
+                description: 'Verify using a text message code'
+            },
+            student: {
+                title: 'Student Verification',
+                description: 'Verify using your university login through Studid'
+            },
+            human: {
+                title: 'Human Verification',
+                description: 'Verify by confirming you are a real person'
+            }
+        };
+
+        // Update page content
+        document.getElementById('title').textContent = serviceName;
+        document.getElementById('methodTitle').textContent = methods[method]?.title || 'Verification';
+        document.getElementById('methodDescription').textContent = methods[method]?.description || 'Verification method';
+
+        // Handle consent
+        document.getElementById('consentBtn').addEventListener('click', () => {
+            // Redirect back with consent granted
+            const redirectUrl = urlParams.get('redirect') || '/';
+            window.location.href = redirectUrl + '?consent=granted&method=' + method;
+        });
+
+        // Handle deny
+        document.getElementById('denyBtn').addEventListener('click', () => {
+            // Redirect back with consent denied
+            const redirectUrl = urlParams.get('redirect') || '/';
+            window.location.href = redirectUrl + '?consent=denied&method=' + method;
+        });
+    </script>
+</body>
+</html>
